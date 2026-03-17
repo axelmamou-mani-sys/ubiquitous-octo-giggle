@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Hippocrate.AI – PASS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --white:#FFFFFF;--off:#F7F8FC;--border:#EAECF4;--border2:#D8DBE8;
+  --ink:#0F1021;--ink2:#4A4E6A;--ink3:#9096B8;
+  --green:#00C48C;--green-l:#E6FBF4;--green-m:#00A677;
+  --red:#FF4757;--red-l:#FFF0F1;
+  --amber:#FFB830;--amber-l:#FFF8E6;
+  --blue:#3B6FFF;--blue-l:#EEF2FF;
+  /* 10 UE colors */
+  --c1:#FF6B35;--c2:#3B6FFF;--c3:#9B5DE5;--c4:#00C48C;--c5:#F72585;
+  --c6:#0096C7;--c7:#FB8500;--c8:#E63946;--c9:#2DC653;--c10:#7B2D8B;
+  --r:18px;--r-sm:12px;--r-lg:24px;
+  --sh:0 2px 16px rgba(15,16,33,.08);--sh-lg:0 8px 40px rgba(15,16,33,.14);
+  --nav-h:68px;--f:'Plus Jakarta Sans',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{height:100%;overflow-y:scroll;scroll-behavior:auto}
+body{font-family:var(--f);background:var(--off);color:var(--ink);max-width:430px;margin:0 auto;min-height:100%;overflow-x:hidden;position:relative}
+button{font-family:var(--f);cursor:pointer;border:none;background:none}
+input{font-family:var(--f)}
+
+/* ── PAGES ── */
+.page{display:none;flex-direction:column;background:var(--off);animation:pgIn .26s cubic-bezier(.22,1,.36,1) both;padding-bottom:var(--nav-h)}
+.page.active{display:flex}
+@keyframes pgIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+#page-tutor{height:100dvh;position:fixed;top:0;left:0;right:0;bottom:0;margin:0 auto;width:100%;max-width:430px;z-index:50;padding-bottom:0}
+#page-tutor .chat-area{flex:1;overflow-y:auto;min-height:0}
+
+/* ── BOTTOM NAV — truly sticky ── */
+.nav{
+  position:fixed;bottom:0;left:0;right:0;
+  margin:0 auto;
+  width:100%;max-width:430px;height:var(--nav-h);
+  background:var(--white);border-top:1px solid var(--border);
+  display:flex;align-items:flex-start;padding-top:8px;
+  z-index:200;
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  box-shadow:0 -4px 20px rgba(15,16,33,.06);
+}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 2px;cursor:pointer;border:none;background:none}
+.nav-iw{width:42px;height:28px;border-radius:14px;display:flex;align-items:center;justify-content:center;transition:background .2s,transform .15s}
+.nav-item.active .nav-iw{background:var(--green-l);transform:scale(1.05)}
+.nav-svg{width:20px;height:20px;stroke:var(--ink3);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:stroke .2s}
+.nav-item.active .nav-svg{stroke:var(--green)}
+.nav-lbl{font-size:10px;font-weight:600;color:var(--ink3);letter-spacing:.01em;transition:color .2s}
+.nav-item.active .nav-lbl{color:var(--green)}
+
+/* ── HEADER ── */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:48px 20px 10px;background:var(--off);position:sticky;top:0;z-index:40}
+.hdr-title{font-size:17px;font-weight:700;color:var(--ink)}
+.hdr-back,.hdr-btn{width:36px;height:36px;border-radius:50%;background:var(--white);box-shadow:var(--sh);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hdr-back svg,.hdr-btn svg{width:17px;height:17px;stroke:var(--ink);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.hdr-menu-btn{width:36px;height:36px;border-radius:50%;background:var(--white);box-shadow:var(--sh);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;flex-shrink:0}
+.hdr-menu-btn span{display:block;width:15px;height:1.8px;background:var(--ink);border-radius:2px}
+.hdr-spacer{width:36px}
+
+/* ── OVERLAY MENU ── */
+.overlay{position:fixed;inset:0;left:50%;transform:translateX(-50%);max-width:430px;width:100%;background:rgba(15,16,33,.55);z-index:300;display:none;backdrop-filter:blur(3px)}
+.overlay.open{display:block}
+.menu-sheet{position:absolute;top:0;left:0;right:0;background:var(--white);border-radius:0 0 var(--r-lg) var(--r-lg);padding:50px 24px 28px;animation:shD .28s cubic-bezier(.22,1,.36,1)}
+@keyframes shD{from{transform:translateY(-16px);opacity:0}to{transform:none;opacity:1}}
+.menu-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.menu-hdr-t{font-size:20px;font-weight:800}
+.menu-close{width:30px;height:30px;border-radius:50%;background:var(--off);display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--ink2)}
+.menu-row{display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--border);font-size:15px;font-weight:600;color:var(--ink);cursor:pointer}
+.menu-row:last-child{border:none;color:var(--red)}
+.menu-ico{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center}
+.menu-ico svg{width:17px;height:17px;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:calc(var(--nav-h) + 12px);left:50%;transform:translateX(-50%) translateY(10px);max-width:390px;width:calc(100% - 40px);background:var(--ink);color:white;padding:12px 18px;border-radius:var(--r-sm);font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:500;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── BUTTONS ── */
+.btn-p{width:100%;padding:15px;border-radius:var(--r);background:var(--ink);color:white;font-size:15px;font-weight:800;transition:transform .12s}
+.btn-p:active{transform:scale(.97)}
+.btn-p.green{background:var(--green)}
+.btn-s{width:100%;padding:14px;border-radius:var(--r);background:var(--white);color:var(--ink);font-size:15px;font-weight:700;border:2px solid var(--border);transition:transform .12s,border-color .15s}
+.btn-s:active{transform:scale(.97);border-color:var(--ink)}
+
+/* ── CARDS ── */
+@keyframes cardIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.card{background:var(--white);border-radius:var(--r);box-shadow:var(--sh)}
+
+/* ══════════════════════════════
+   HOME
+══════════════════════════════ */
+.home-top{padding:4px 20px 20px}
+.home-greeting{font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.09em;margin-bottom:5px}
+.home-title{font-size:26px;font-weight:800;color:var(--ink);line-height:1.18}
+.home-title em{color:var(--green);font-style:normal}
+.streak{display:inline-flex;align-items:center;gap:6px;padding:6px 13px;border-radius:20px;background:var(--amber-l);border:1.5px solid #FFD580;font-size:12px;font-weight:700;color:#7A5000;margin-top:12px}
+.streak svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* HOME — RADAR HERO */
+.radar-hero{margin:0 20px 16px;background:linear-gradient(140deg,#0F1021 0%,#182040 100%);border-radius:var(--r-lg);padding:22px 22px 18px;position:relative;overflow:hidden;box-shadow:var(--sh-lg)}
+.radar-hero::before{content:'';position:absolute;top:-30px;right:-30px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(0,196,140,.25) 0%,transparent 70%)}
+.rh-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2px}
+.rh-label{font-size:11px;font-weight:700;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.09em;margin-bottom:4px}
+.rh-avg{font-size:32px;font-weight:800;color:white;line-height:1}
+.rh-avg span{font-size:14px;font-weight:500;color:rgba(255,255,255,.5)}
+.rh-cta{font-size:11px;font-weight:700;color:var(--green);background:rgba(0,196,140,.15);padding:4px 10px;border-radius:8px;cursor:pointer;border:none;font-family:var(--f);transition:background .15s}
+.rh-cta:active{background:rgba(0,196,140,.28)}
+#homeGaussSvg{width:100%;height:72px;display:block}
+
+/* HOME STATS */
+.stats2{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 20px 16px}
+.sc{background:var(--white);border-radius:var(--r);padding:14px 16px;box-shadow:var(--sh);position:relative;overflow:hidden}
+.sc::after{content:'';position:absolute;bottom:-12px;right:-12px;width:52px;height:52px;border-radius:50%;opacity:.07}
+.sc.g::after{background:var(--green)}.sc.b::after{background:var(--blue)}
+.sc-lbl{font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.07em}
+.sc-val{font-size:28px;font-weight:800;color:var(--ink);line-height:1;margin-top:3px}
+.sc-val span{font-size:13px;color:var(--ink3);font-weight:500}
+.sc-sub{font-size:11px;color:var(--ink3);margin-top:3px}
+
+/* ACTION LIST */
+.sec-t{font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.09em;padding:0 20px 10px}
+.act-list{padding:0 20px;display:flex;flex-direction:column;gap:9px;margin-bottom:20px}
+.act-card{display:flex;align-items:center;gap:14px;padding:15px 16px;border-radius:var(--r);background:var(--white);box-shadow:var(--sh);width:100%;text-align:left;transition:transform .13s,box-shadow .13s;border:1.5px solid transparent;animation:cardIn .38s cubic-bezier(.22,1,.36,1) both}
+.act-card:nth-child(1){animation-delay:.04s}.act-card:nth-child(2){animation-delay:.09s}.act-card:nth-child(3){animation-delay:.14s}
+.act-card:active{transform:scale(.975)}
+.act-card.t{border-color:#C8F4E8}.act-card.q{border-color:#D4DEFF}.act-card.d{border-color:#FFE4D4}
+.act-ico{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.act-ico svg{width:20px;height:20px;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.t .act-ico{background:var(--green-l)}.t .act-ico svg{stroke:var(--green-m)}
+.q .act-ico{background:var(--blue-l)}.q .act-ico svg{stroke:var(--blue)}
+.d .act-ico{background:#FFF3EE}.d .act-ico svg{stroke:var(--c7)}
+.act-tt{font-size:14px;font-weight:700;color:var(--ink)}
+.act-st{font-size:11px;font-weight:500;color:var(--ink3);margin-top:2px}
+.act-arr{margin-left:auto;width:28px;height:28px;border-radius:50%;background:var(--off);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.act-arr svg{width:13px;height:13px;stroke:var(--ink2);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* ══════════════════════════════
+   UE LIST
+══════════════════════════════ */
+.ue-list{padding:0 20px;display:flex;flex-direction:column;gap:9px}
+.ue-card{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);display:flex;align-items:stretch;overflow:hidden;transition:transform .13s;animation:cardIn .38s cubic-bezier(.22,1,.36,1) both;cursor:pointer;width:100%;text-align:left;border:none}
+.ue-card:active{transform:scale(.975)}
+.ue-bar{width:5px;flex-shrink:0}
+.ue-body{flex:1;padding:13px 14px;min-width:0}
+.ue-tag{font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
+.ue-name{font-size:13px;font-weight:700;color:var(--ink);line-height:1.3}
+.ue-pr{display:flex;align-items:center;gap:7px;margin-top:7px}
+.pbar{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.pfill{height:100%;border-radius:2px;transition:width .8s cubic-bezier(.22,1,.36,1)}
+.ppct{font-size:10px;font-weight:700;color:var(--ink3)}
+.ue-play{width:48px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--off);border-left:1px solid var(--border)}
+.play-c{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.play-c svg{width:11px;height:11px;fill:white;margin-left:2px}
+
+/* ══════════════════════════════
+   COURS
+══════════════════════════════ */
+.c-hero{margin:0 20px 16px;padding:18px 20px;border-radius:var(--r-lg);position:relative;overflow:hidden}
+.c-hero-deco{position:absolute;top:-18px;right:-18px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.12)}
+.c-hero-deco2{position:absolute;bottom:-24px;right:18px;width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.08)}
+.c-hero-ue{font-size:10px;font-weight:700;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px}
+.c-hero-title{font-size:18px;font-weight:800;color:white;line-height:1.25}
+.c-hero-sub{font-size:12px;color:rgba(255,255,255,.7);margin-top:6px;font-weight:500}
+.c-list{padding:0 20px;display:flex;flex-direction:column;gap:8px}
+.c-item{background:var(--white);border-radius:var(--r);padding:13px 14px;box-shadow:var(--sh);display:flex;align-items:center;gap:12px;transition:transform .13s;animation:cardIn .38s cubic-bezier(.22,1,.36,1) both;cursor:pointer;width:100%;text-align:left;border:none}
+.c-item:active{transform:scale(.975)}
+.c-num{width:32px;height:32px;border-radius:9px;background:var(--off);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--ink2);flex-shrink:0}
+.c-inf{flex:1;min-width:0}
+.c-t{font-size:13px;font-weight:700;color:var(--ink);line-height:1.3}
+.c-d{font-size:11px;font-weight:500;color:var(--ink3);margin-top:2px;line-height:1.4}
+.c-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.c-dot.ok{background:var(--green)}.c-dot.warn{background:var(--amber)}.c-dot.bad{background:var(--red)}.c-dot.none{background:var(--border2)}
+.c-chev svg{width:14px;height:14px;stroke:var(--ink3);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* ══════════════════════════════
+   TUTOR
+══════════════════════════════ */
+.tutor-av{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#00C48C,#3B6FFF);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 14px rgba(0,196,140,.32)}
+.tutor-av svg{width:23px;height:23px;stroke:white;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.chat-area{flex:1;padding:0 20px;display:flex;flex-direction:column;gap:11px;overflow-y:auto}
+.msg-row{display:flex;gap:9px;align-items:flex-end}
+.msg-row.user{flex-direction:row-reverse}
+.bbl-ai{background:var(--white);border-radius:16px 16px 16px 4px;padding:12px 15px;font-size:14px;line-height:1.55;color:var(--ink);box-shadow:var(--sh);max-width:82%;animation:bbIn .28s cubic-bezier(.22,1,.36,1)}
+.bbl-user{background:var(--ink);border-radius:16px 16px 4px 16px;padding:12px 15px;font-size:14px;line-height:1.55;color:white;max-width:82%;animation:bbIn .28s cubic-bezier(.22,1,.36,1)}
+@keyframes bbIn{from{opacity:0;transform:translateY(7px) scale(.96)}to{opacity:1;transform:none}}
+.typing{display:flex;align-items:center;gap:5px;padding:12px 15px;background:var(--white);border-radius:16px 16px 16px 4px;box-shadow:var(--sh)}
+.td{width:6px;height:6px;border-radius:50%;background:var(--ink3);animation:tdB 1.2s ease-in-out infinite}
+.td:nth-child(2){animation-delay:.15s}.td:nth-child(3){animation-delay:.3s}
+@keyframes tdB{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+.stage-lbl{display:inline-flex;align-items:center;gap:6px;padding:5px 13px 5px 8px;background:var(--green-l);border-radius:20px;margin:0 20px 14px;font-size:12px;font-weight:700;color:var(--green-m);align-self:flex-start}
+.sdot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 1.2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.input-bar{padding:10px 20px 24px;background:var(--off);border-top:1px solid var(--border)}
+.input-row{display:flex;align-items:center;gap:9px;background:var(--white);border-radius:var(--r);padding:9px 9px 9px 15px;box-shadow:var(--sh);border:1.5px solid var(--border)}
+.input-row:focus-within{border-color:var(--green)}
+.input-row input{flex:1;border:none;background:none;outline:none;font-size:14px;font-weight:500;color:var(--ink)}
+.input-row input::placeholder{color:var(--ink3)}
+.send-btn{width:36px;height:36px;border-radius:11px;background:var(--ink);display:flex;align-items:center;justify-content:center;transition:transform .11s;flex-shrink:0}
+.send-btn:active{transform:scale(.88)}
+.send-btn svg{width:16px;height:16px;stroke:white;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* ══════════════════════════════
+   QCM TILES
+══════════════════════════════ */
+.qcm-grid{padding:0 20px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.qcm-tile{border-radius:var(--r);padding:16px 14px;display:flex;flex-direction:column;gap:5px;position:relative;overflow:hidden;min-height:106px;transition:transform .13s,box-shadow .13s;box-shadow:var(--sh);animation:cardIn .38s cubic-bezier(.22,1,.36,1) both;cursor:pointer;border:none;text-align:left}
+.qcm-tile:active{transform:scale(.95)}
+.qcm-tile::before{content:'';position:absolute;top:-14px;right:-14px;width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.14)}
+.qcm-tile::after{content:'';position:absolute;bottom:-20px;left:6px;width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.07)}
+.qt-num{font-size:9px;font-weight:800;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.1em}
+.qt-name{font-size:12px;font-weight:700;color:white;line-height:1.3;flex:1}
+.qt-badge{display:inline-flex;align-items:center;background:rgba(255,255,255,.2);border-radius:7px;padding:2px 8px;font-size:10px;font-weight:700;color:white;width:fit-content}
+.qt-soon{background:rgba(255,255,255,.1);border-radius:7px;padding:2px 8px;font-size:10px;font-weight:600;color:rgba(255,255,255,.6);width:fit-content}
+.qcm-tile.locked{opacity:.4}
+
+/* ══════════════════════════════
+   QCM QUESTION — 5 choices
+══════════════════════════════ */
+.qcm-top{padding:0 20px 14px}
+.qcm-pr{display:flex;align-items:center;gap:11px;margin-bottom:8px}
+.qcm-ctr{font-size:11px;font-weight:700;color:var(--ink3);white-space:nowrap}
+.qcm-pb{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.qcm-pf{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--green),#00E5A8);transition:width .45s cubic-bezier(.22,1,.36,1)}
+.qcm-lives{display:flex;gap:2px}
+.qcm-heart{display:flex;align-items:center}
+.qcm-heart.lost{opacity:.22}
+.q-text{font-size:18px;font-weight:800;color:var(--ink);line-height:1.3;padding:0 20px 20px}
+.choices{padding:0 20px;display:flex;flex-direction:column;gap:8px}
+.choice{display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:var(--r);background:var(--white);box-shadow:var(--sh);border:2px solid transparent;font-size:13px;font-weight:600;color:var(--ink);text-align:left;width:100%;transition:border-color .14s,background .14s,transform .11s;cursor:pointer}
+.choice:active:not([disabled]){transform:scale(.975)}
+.choice.selected{border-color:var(--ink);background:var(--off);animation:selB .22s cubic-bezier(.36,.07,.19,.97)}
+@keyframes selB{0%{transform:scale(1)}40%{transform:scale(.97)}70%{transform:scale(1.02)}100%{transform:scale(1)}}
+.choice.correct{border-color:var(--green);background:var(--green-l);color:var(--green-m)}
+.choice.wrong{border-color:var(--red);background:var(--red-l);color:var(--red)}
+.c-letter{width:27px;height:27px;border-radius:7px;flex-shrink:0;background:var(--off);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--ink2);transition:background .14s,color .14s}
+.choice.selected .c-letter{background:var(--ink);color:white}
+.choice.correct  .c-letter{background:var(--green);color:white}
+.choice.wrong    .c-letter{background:var(--red);color:white}
+.fb-strip{margin:14px 20px 0;padding:13px 15px;border-radius:var(--r-sm);font-size:13px;font-weight:600;line-height:1.5;animation:fbIn .28s cubic-bezier(.22,1,.36,1)}
+@keyframes fbIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.fb-strip.ok{background:var(--green-l);color:var(--green-m);border:1.5px solid #B3F0DC}
+.fb-strip.bad{background:var(--red-l);color:#A00018;border:1.5px solid #FFCDD3}
+.fb-t{font-size:13px;font-weight:800;margin-bottom:3px}
+.val-bar{padding:14px 20px 24px;background:var(--off);border-top:1px solid var(--border)}
+.val-btn{width:100%;padding:15px;border-radius:var(--r);font-size:15px;font-weight:800;background:var(--ink);color:white;opacity:.28;pointer-events:none;transition:opacity .2s,transform .11s,background .2s}
+.val-btn.ready{opacity:1;pointer-events:all}
+.val-btn.ready:active{transform:scale(.97)}
+.val-btn.next{background:var(--green);opacity:1;pointer-events:all}
+
+/* ══════════════════════════════
+   RESULTS + RICH RECO
+══════════════════════════════ */
+.res-bg{background:linear-gradient(160deg,#0F1021 0%,#182040 100%);padding:28px 20px 36px;border-radius:0 0 var(--r-lg) var(--r-lg);position:relative;overflow:hidden}
+.res-bg::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 70% 20%,rgba(0,196,140,.18) 0%,transparent 55%),radial-gradient(ellipse at 20% 80%,rgba(59,111,255,.12) 0%,transparent 50%)}
+.res-ttl{font-size:12px;font-weight:700;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.1em;text-align:center;margin-bottom:24px;position:relative}
+.score-wrap{display:flex;flex-direction:column;align-items:center;position:relative}
+.sring{width:130px;height:130px;transform:rotate(-90deg)}
+.sring-bg{fill:none;stroke:rgba(255,255,255,.08);stroke-width:10}
+.sring-arc{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1.2s cubic-bezier(.22,1,.36,1)}
+.score-ctr{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.score-frac{font-size:30px;font-weight:800;color:white;line-height:1}
+.score-pct{font-size:12px;font-weight:600;color:rgba(255,255,255,.5);margin-top:2px}
+.res-badge{margin-top:18px;display:inline-flex;align-items:center;padding:9px 18px;border-radius:20px;font-size:14px;font-weight:800}
+.res-sub{font-size:13px;font-weight:500;color:rgba(255,255,255,.55);margin-top:6px;text-align:center}
+.bubbles{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;padding:20px 20px 0}
+.ans-b{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;animation:popIn .38s cubic-bezier(.22,1,.36,1) both}
+@keyframes popIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.ans-b.ok{background:var(--green-l);color:var(--green-m);border:2px solid #B3F0DC}
+.ans-b.bad{background:var(--red-l);color:var(--red);border:2px solid #FFCDD3}
+
+/* RICH RECO */
+.reco-section{padding:20px 20px 0}
+.reco-section-title{font-size:13px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+.reco-block{background:var(--white);border-radius:var(--r);padding:15px 16px;box-shadow:var(--sh);margin-bottom:10px;animation:cardIn .38s cubic-bezier(.22,1,.36,1) both}
+.reco-type{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px}
+.reco-type.r{color:var(--red)}.reco-type.a{color:var(--amber)}.reco-type.g{color:var(--green-m)}
+.reco-title{font-size:14px;font-weight:800;color:var(--ink);margin-bottom:5px;line-height:1.3}
+.reco-body{font-size:13px;color:var(--ink2);line-height:1.55}
+.reco-analogy{background:var(--blue-l);border-left:3px solid var(--blue);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:10px 13px;margin-top:10px;font-size:12px;color:var(--ink2);line-height:1.5}
+.reco-analogy strong{color:var(--blue);font-weight:700}
+.reco-action{display:inline-flex;align-items:center;gap:6px;margin-top:11px;padding:8px 14px;border-radius:10px;font-size:12px;font-weight:700;background:var(--off);color:var(--ink2);border:none;cursor:pointer;transition:background .15s}
+.reco-action:active{background:var(--border)}
+.plan-card{background:linear-gradient(135deg,#0F1021,#1A2045);border-radius:var(--r);padding:16px 18px;margin-bottom:10px}
+.plan-title{font-size:14px;font-weight:800;color:white;margin-bottom:8px}
+.plan-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:7px}
+.plan-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:6px;background:var(--green)}
+.plan-text{font-size:12px;color:rgba(255,255,255,.7);line-height:1.5}
+.res-actions{padding:16px 20px 20px;display:flex;flex-direction:column;gap:9px}
+
+/* ══════════════════════════════
+   DIAGNOSTIC — RADAR + FLOW
+══════════════════════════════ */
+.diag-hero{margin:0 20px 16px;background:var(--ink);border-radius:var(--r-lg);padding:20px;position:relative;overflow:hidden}
+.diag-hero::before{content:'';position:absolute;top:-24px;right:-24px;width:110px;height:110px;border-radius:50%;background:rgba(0,196,140,.14)}
+.diag-hero::after{content:'';position:absolute;bottom:-32px;left:16px;width:80px;height:80px;border-radius:50%;background:rgba(59,111,255,.1)}
+.dh-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px;position:relative}
+.dh-val{font-size:38px;font-weight:800;color:white;line-height:1;position:relative}
+.dh-sub{font-size:12px;color:rgba(255,255,255,.55);margin-top:3px;font-weight:500;position:relative}
+.dh-chips{display:flex;gap:7px;margin-top:14px;flex-wrap:wrap;position:relative}
+/* Gauss */
+.gauss-wrap{margin-top:16px;position:relative}
+.gauss-label-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;position:relative}
+.gauss-rank{font-size:11px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em}
+.gauss-percentile{font-size:22px;font-weight:800;color:var(--green);line-height:1}
+.gauss-percentile span{font-size:12px;font-weight:500;color:rgba(255,255,255,.5)}
+#gaussSvg{width:100%;height:68px;display:block;position:relative}
+.gauss-caption{font-size:11px;color:rgba(255,255,255,.4);margin-top:5px;position:relative;text-align:center}
+.dh-chip{padding:4px 11px;border-radius:20px;font-size:11px;font-weight:700}
+.dh-chip.g{background:rgba(0,196,140,.2);color:var(--green)}
+.dh-chip.a{background:rgba(255,184,48,.2);color:var(--amber)}
+.dh-chip.r{background:rgba(255,71,87,.2);color:var(--red)}
+
+.radar-card{margin:0 20px 8px;background:linear-gradient(140deg,#0F1021 0%,#182040 100%);border-radius:var(--r-lg);padding:18px 18px 16px;box-shadow:var(--sh-lg);position:relative;overflow:hidden}
+.radar-card::before{content:'';position:absolute;top:-30px;right:-30px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(0,196,140,.2) 0%,transparent 70%)}
+.radar-card-title{font-size:14px;font-weight:700;color:white;margin-bottom:2px}
+.radar-card-sub{font-size:11px;color:rgba(255,255,255,.45);margin-bottom:16px}
+#diagRadarSvg{width:100%;height:260px;overflow:visible;display:block}
+.radar-leg{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px;justify-content:center}
+.rl{display:flex;align-items:center;gap:4px;font-size:10px;font-weight:600;color:rgba(255,255,255,.65)}
+.rl-d{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* CONCOURS BLANC CTA */
+.blanc-cta{margin:16px 20px 0;background:linear-gradient(135deg,#0F1021,#1A2045);border-radius:var(--r-lg);padding:20px;position:relative;overflow:hidden;cursor:pointer;box-shadow:var(--sh-lg);transition:transform .13s;border:none;width:calc(100% - 40px);text-align:left}
+.blanc-cta:active{transform:scale(.98)}
+.blanc-cta::before{content:'';position:absolute;top:-18px;right:-18px;width:90px;height:90px;border-radius:50%;background:rgba(0,196,140,.13)}
+.bc-tag{font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;position:relative}
+
+/* COUNTDOWN */
+.countdown-row{display:flex;gap:8px;margin:8px 0 14px;position:relative}
+.cd-block{background:rgba(255,255,255,.07);border-radius:8px;padding:6px 10px;text-align:center;min-width:44px}
+.cd-num{font-size:20px;font-weight:800;color:white;line-height:1;font-variant-numeric:tabular-nums}
+.cd-lbl{font-size:9px;font-weight:600;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.06em;margin-top:1px}
+.cd-sep{font-size:18px;font-weight:700;color:rgba(255,255,255,.3);align-self:flex-start;padding-top:6px}
+
+.bc-title{font-size:18px;font-weight:800;color:white;line-height:1.2;margin-bottom:5px;position:relative}
+.bc-sub{font-size:12px;color:rgba(255,255,255,.55);margin-bottom:14px;position:relative;font-weight:500}
+.bc-btn{display:inline-flex;align-items:center;gap:7px;background:var(--green);color:white;padding:10px 18px;border-radius:10px;font-size:13px;font-weight:800;position:relative}
+.bc-btn svg{width:14px;height:14px;stroke:white;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* FLOW STEPS */
+.flow-wrap{padding:0 20px;margin-top:16px}
+.flow-ttl{font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+.flow-step{background:var(--white);border-radius:var(--r);padding:14px 16px;margin-bottom:9px;box-shadow:var(--sh);display:flex;gap:12px;animation:cardIn .38s cubic-bezier(.22,1,.36,1) both}
+.flow-num{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;color:white}
+.flow-body{}
+.flow-name{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:3px}
+.flow-desc{font-size:12px;color:var(--ink3);line-height:1.5}
+.flow-tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;margin-top:7px}
+
+/* ACCORDION */
+.acc-wrap{padding:0 20px;margin-top:16px}
+.due-item{background:var(--white);border-radius:var(--r);margin-bottom:8px;box-shadow:var(--sh);overflow:hidden;animation:cardIn .38s cubic-bezier(.22,1,.36,1) both}
+.due-hdr{display:flex;align-items:center;gap:12px;padding:13px 14px;cursor:pointer;transition:background .13s;border:none;background:none;width:100%;text-align:left}
+.due-hdr:active{background:var(--off)}
+.due-stripe{width:4px;align-self:stretch;border-radius:3px;flex-shrink:0}
+.due-left{flex:1;min-width:0}
+.due-tag{font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px}
+.due-name{font-size:13px;font-weight:700;color:var(--ink);line-height:1.3}
+.due-pr{display:flex;align-items:center;gap:7px;margin-top:5px}
+.lvl{padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;flex-shrink:0}
+.lvl.ok{background:var(--green-l);color:var(--green-m)}
+.lvl.warn{background:var(--amber-l);color:#7A5400}
+.lvl.bad{background:var(--red-l);color:var(--red)}
+.lvl.none{background:var(--off);color:var(--ink3);border:1px solid var(--border)}
+.due-chev svg{width:14px;height:14px;stroke:var(--ink3);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;transition:transform .22s}
+.due-item.open .due-chev svg{transform:rotate(90deg)}
+.due-cours{border-top:1px solid var(--border);padding:6px 0 10px}
+.dc-row{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;transition:background .13s;border:none;background:none;width:100%;text-align:left}
+.dc-row:active{background:var(--off)}
+.dc-n{font-size:10px;font-weight:700;color:var(--ink3);width:18px}
+.dc-name{flex:1;font-size:12px;font-weight:600;color:var(--ink);line-height:1.3}
+.hidden{display:none!important}
+
+/* BATTERIE */
+.batt-ctx{background:var(--white);border-radius:var(--r);padding:15px 16px;box-shadow:var(--sh);margin:0 20px 14px}
+.batt-ctx-lbl{font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px}
+.batt-ctx-t{font-size:13px;color:var(--ink2);line-height:1.55}
+.batt-list{padding:0 20px;display:flex;flex-direction:column;gap:8px}
+.bs{display:flex;align-items:center;gap:11px;padding:12px 14px;background:var(--white);border-radius:var(--r);box-shadow:var(--sh);border:2px solid transparent;cursor:pointer;width:100%;text-align:left;transition:transform .13s}
+.bs:active{transform:scale(.975)}
+.bs.done{border-color:var(--green)}.bs.active-s{border-color:var(--blue)}.bs.pending{border-color:var(--border)}
+.bs-num{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
+.bs.done .bs-num{background:var(--green-l);color:var(--green-m)}.bs.active-s .bs-num{background:var(--blue-l);color:var(--blue)}.bs.pending .bs-num{background:var(--off);color:var(--ink3)}
+.bs-info{flex:1}
+.bs-t{font-size:13px;font-weight:700;color:var(--ink)}
+.bs-d{font-size:11px;color:var(--ink3);margin-top:1px}
+.bs-sc{font-size:12px;font-weight:700;color:var(--green-m)}
+
+/* CONCOURS BLANC PAGE */
+.blanc-intro{background:linear-gradient(135deg,#0F1021,#1A2045);border-radius:var(--r-lg);padding:20px;margin:0 20px 16px;position:relative;overflow:hidden}
+.blanc-intro::before{content:'';position:absolute;top:-20px;right:-20px;width:90px;height:90px;border-radius:50%;background:rgba(0,196,140,.12)}
+.legend-dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex-shrink:0}
+.legend-dot.ok{background:var(--green)}.legend-dot.bad{background:var(--red)}
+</style>
+</head>
+<body>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay" onclick="closeMenu()">
+  <div class="menu-sheet" onclick="event.stopPropagation()">
+    <div class="menu-hdr"><div class="menu-hdr-t">Menu</div><button class="menu-close" onclick="closeMenu()">✕</button></div>
+    <div class="menu-row" onclick="go('home');closeMenu()"><div class="menu-ico" style="background:#F0FBF7"><svg stroke="var(--green-m)" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>Accueil</div>
+    <div class="menu-row" onclick="go('ues');closeMenu()"><div class="menu-ico" style="background:#F0FBF7"><svg stroke="var(--green-m)" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg></div>Tuteur IA</div>
+    <div class="menu-row" onclick="go('qcmUes');closeMenu()"><div class="menu-ico" style="background:#EEF2FF"><svg stroke="var(--blue)" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>QCM</div>
+    <div class="menu-row" onclick="go('diag');closeMenu()"><div class="menu-ico" style="background:#FFF3EE"><svg stroke="var(--c7)" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>Diagnostic</div>
+    <div class="menu-row"><div class="menu-ico" style="background:#FFF0F1"><svg stroke="var(--red)" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>Se déconnecter</div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- ═══ HOME ═══ -->
+<div class="page active" id="page-home">
+  <div class="hdr"><div class="hdr-spacer"></div><div class="hdr-title">Hippocrate.AI</div><button class="hdr-menu-btn" onclick="openMenu()"><span></span><span></span><span></span></button></div>
+  <div class="scroll">
+    <div class="home-top">
+      <div class="home-greeting">Bonjour, Léa</div>
+      <div class="home-title">Chaque heure<br>de travail compte.<br><em>Commence maintenant.</em></div>
+      <div class="streak"><svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>12 jours d'affilée · Concours dans 127 jours</div>
+    </div>
+
+    <!-- RADAR HERO -->
+    <div class="radar-hero" onclick="go('diag')" style="cursor:pointer">
+      <div class="rh-top">
+        <div>
+          <div class="rh-label">Classement dans la promo</div>
+          <div class="rh-avg">Top 35%<span style="font-size:13px;margin-left:4px">de la promo</span></div>
+        </div>
+        <div class="rh-cta">Voir le détail</div>
+      </div>
+      <div style="margin-top:18px">
+        <svg id="homeGaussSvg" viewBox="0 0 320 86" preserveAspectRatio="none" style="width:100%;height:86px;display:block;pointer-events:none"></svg>
+        <div style="display:flex;justify-content:space-between;margin-top:6px">
+          <span style="font-size:10px;font-weight:600;color:rgba(255,255,255,.38)">Faible</span>
+          <span style="font-size:10px;font-weight:600;color:rgba(255,255,255,.38)">Élevé</span>
+        </div>
+        <div style="font-size:10px;color:rgba(255,255,255,.32);margin-top:8px;text-align:center;font-weight:600">Distribution simulée · 1 247 étudiants Hippocrate.AI · Promo 2025–2026</div>
+      </div>
+    </div>
+
+    <div class="stats2">
+      <div class="sc g"><div class="sc-lbl">QCM score moyen</div><div class="sc-val">67<span>%</span></div><div class="sc-sub">+4 pts cette semaine</div></div>
+      <div class="sc b"><div class="sc-lbl">Chapitres travaillés</div><div class="sc-val">18<span>/64</span></div><div class="sc-sub">28% du programme</div></div>
+    </div>
+
+    <div class="sec-t">Que veux-tu faire ?</div>
+    <div class="act-list">
+      <button class="act-card t" onclick="go('ues')">
+        <div class="act-ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg></div>
+        <div><div class="act-tt">Travailler une leçon</div><div class="act-st">Révisions guidées par le tuteur IA</div></div>
+        <div class="act-arr"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </button>
+      <button class="act-card q" onclick="go('qcmUes')">
+        <div class="act-ico"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+        <div><div class="act-tt">Faire un QCM</div><div class="act-st">S'entraîner aux questions de concours</div></div>
+        <div class="act-arr"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </button>
+      <button class="act-card d" onclick="go('diag')">
+        <div class="act-ico"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+        <div><div class="act-tt">Mon diagnostic</div><div class="act-st">Radar · Batterie de tests · Concours blanc</div></div>
+        <div class="act-arr"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ UES ═══ -->
+<div class="page" id="page-ues">
+  <div class="hdr"><button class="hdr-back" onclick="go('home')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button><div class="hdr-title">Choisir une UE</div><button class="hdr-menu-btn" onclick="openMenu()"><span></span><span></span><span></span></button></div>
+  <div class="scroll"><div class="ue-list" id="ueList" style="padding-top:4px"></div></div>
+</div>
+
+<!-- ═══ COURS ═══ -->
+<div class="page" id="page-cours">
+  <div class="hdr"><button class="hdr-back" onclick="go('ues')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button><div class="hdr-title" id="coursHdrT">Leçons</div><button class="hdr-menu-btn" onclick="openMenu()"><span></span><span></span><span></span></button></div>
+  <div class="scroll">
+    <div class="c-hero" id="cHero"><div class="c-hero-deco"></div><div class="c-hero-deco2"></div>
+      <div class="c-hero-ue" id="cHeroUE"></div><div class="c-hero-title" id="cHeroTitle"></div><div class="c-hero-sub" id="cHeroSub"></div>
+    </div>
+    <div class="c-list" id="cList"></div>
+  </div>
+</div>
+
+<!-- ═══ TUTOR ═══ -->
+<div class="page" id="page-tutor">
+  <div class="hdr"><button class="hdr-back" id="tutorBack"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button><div class="hdr-title" id="tutorTitle">Révision</div><button class="hdr-menu-btn" onclick="openMenu()"><span></span><span></span><span></span></button></div>
+  <div class="stage-lbl" style="margin-top:8px"><div class="sdot"></div><span id="stageTxt">Révision guidée</span></div>
+  <div class="chat-area" id="chatArea" style="padding-bottom:12px"></div>
+  <div class="input-bar">
+    <div class="input-row">
+      <input type="text" id="chatInput" placeholder="Votre réponse…" onkeypress="if(event.key==='Enter')sendMsg()">
+      <button class="send-btn" onclick="sendMsg()"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ QCM UEs ═══ -->
+<div class="page" id="page-qcmUes">
+  <div class="hdr"><button class="hdr-back" onclick="go('home')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button><div class="hdr-title">Choisir un QCM</div><button class="hdr-menu-btn" onclick="openMenu()"><span></span><span></span><span></span></button></div>
+  <div class="scroll">
+    <div style="padding:4px 20px 12px;font-size:12px;font-weight:500;color:var(--ink3)">Format concours réel · Correction immédiate</div>
+    <div class="qcm-grid" id="qcmGrid"></div>
+  </div>
+</div>
+
+<!-- ═══ QCM QUESTION ═══ -->
+<div class="page" id="page-qcm">
+  <div class="hdr"><button class="hdr-back" onclick="go('qcmUes')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button><div class="hdr-title" id="qcmTitle">QCM</div><button class="hdr-menu-btn" onclick="openMenu()"><span></span><span></span><span></span></button></div>
+  <div class="qcm-top">
+    <div class="qcm-pr">
+      <div class="qcm-ctr" id="qcmCtr">1/10</div>
+      <div class="qcm-pb"><div class="qcm-pf" id="qcmPf" style="width:10%"></div></div>
+      <div class="qcm-lives" id="qcmLives"></div>
+    </div>
+  </div>
+  <div class="scroll" style="padding-top:0;padding-bottom:90px">
+    <div class="q-text" id="qText"></div>
+    <div class="choices" id="choices"></div>
+    <div id="fbStrip" class="hidden"></div>
+  </div>
+  <div class="val-bar"><button class="val-btn" id="valBtn" onclick="validateOrNext()">Valider ma réponse</button></div>
+</div>
+
+<!-- ═══ RESULTS + RECO ═══ -->
+<div class="page" id="page-results">
+  <div class="res-bg">
+    <div class="res-ttl">Résultats du QCM</div>
+    <div class="score-wrap">
+      <svg class="sring" viewBox="0 0 130 130"><circle class="sring-bg" cx="65" cy="65" r="52"/><circle class="sring-arc" id="sArc" cx="65" cy="65" r="52" stroke-dasharray="327" stroke-dashoffset="327"/></svg>
+      <div class="score-ctr"><div class="score-frac"><span id="rSc">0</span>/<span id="rTot">10</span></div><div class="score-pct" id="rPct">0%</div></div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center">
+      <div class="res-badge" id="rBadge"></div>
+      <div class="res-sub" id="rSub"></div>
+    </div>
+  </div>
+  <div class="bubbles" id="rBubbles"></div>
+  <div style="padding:8px 20px 4px;display:flex;gap:14px;align-items:center">
+    <span class="legend-dot ok"></span><span style="font-size:11px;font-weight:600;color:var(--ink3)">Bonne réponse</span>
+    <span class="legend-dot bad"></span><span style="font-size:11px;font-weight:600;color:var(--ink3)">Mauvaise réponse</span>
+  </div>
+
+  <!-- RICH RECOMMENDATIONS -->
+  <div class="reco-section" id="recoSection"></div>
+
+  <div class="res-actions">
+    <button class="btn-p green" onclick="restartQCM()">Refaire ce QCM</button>
+    <button class="btn-s" onclick="go('qcmUes')">Choisir un autre QCM</button>
+    <button class="btn-s" onclick="go('home')">Retour à l'accueil</button>
+  </div>
+</div>
+
+<!-- ═══ DIAGNOSTIC ═══ -->
+<div class="page" id="page-diag">
+  <div class="hdr"><button class="hdr-back" onclick="go('home')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button><div class="hdr-title">Mon diagnostic</div><button class="hdr-menu-btn" onclick="openMenu()"><span></span><span></span><span></span></button></div>
+  <div class="scroll">
+    <div class="diag-hero">
+      <div class="dh-lbl">Classement indicatif dans la promo</div>
+      <div style="display:flex;align-items:flex-end;gap:12px;position:relative">
+        <div>
+          <div class="dh-val">Top 35%</div>
+          <div class="dh-sub">Mieux que 65% de la promo · 127 jours avant le concours</div>
+        </div>
+        <div style="text-align:right;padding-bottom:4px">
+          <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em">Score moyen</div>
+          <div style="font-size:20px;font-weight:800;color:white;line-height:1.1">67<span style="font-size:12px;color:rgba(255,255,255,.5);font-weight:500">%</span></div>
+        </div>
+      </div>
+      <div class="gauss-wrap">
+        <svg id="diagGaussSvg" viewBox="0 0 320 68" preserveAspectRatio="none"></svg>
+        <div style="display:flex;justify-content:space-between;margin-top:3px;position:relative">
+          <span style="font-size:10px;font-weight:600;color:rgba(255,255,255,.38)">Faible</span>
+          <span style="font-size:10px;font-weight:600;color:rgba(255,255,255,.38)">Élevé</span>
+        </div>
+        <div class="gauss-caption">Distribution simulée des 1 247 étudiants Hippocrate.AI · Promo 2025–2026</div>
+      </div>
+      <div class="dh-chips" style="margin-top:12px"><div class="dh-chip g">1 UE maîtrisée</div><div class="dh-chip a">3 en cours</div><div class="dh-chip r">4 à renforcer</div></div>
+    </div>
+
+    <div class="radar-card">
+      <div class="radar-card-title">Carte des compétences</div>
+      <div class="radar-card-sub">Mis à jour après chaque session · Cliquer sur une UE pour accéder aux leçons</div>
+      <svg id="diagRadarSvg" viewBox="-16 -16 292 292"></svg>
+      <div class="radar-leg" id="radarLeg"></div>
+    </div>
+
+    <!-- CONCOURS BLANC CTA + COUNTDOWN -->
+    <button class="blanc-cta" onclick="go('blanc')">
+      <div class="bc-tag">Prochain concours blanc simultané</div>
+      <div class="bc-title">Concours blanc PASS<br>Mars 2026</div>
+      <div class="countdown-row" id="cdRow"></div>
+      <div class="bc-sub">120 questions · Toutes UE · 3h · Avec tous les étudiants Hippocrate.AI</div>
+      <div class="bc-btn"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>Lancer le concours blanc</div>
+    </button>
+
+    <div class="flow-wrap">
+      <div class="flow-ttl">Comment fonctionne le diagnostic</div>
+      <div class="flow-step" style="animation-delay:.05s">
+        <div class="flow-num" style="background:var(--blue)">1</div>
+        <div class="flow-body">
+          <div class="flow-name">Batterie de tests par leçon</div>
+          <div class="flow-desc">5 questions ciblées par leçon identifient précisément tes lacunes — pas seulement l'UE, mais le concept exact. L'algorithme cartographie ton niveau en ~3 min par chapitre.</div>
+          <div class="flow-tag" style="background:var(--blue-l);color:var(--blue)">5 questions · ~3 min · Adaptatif</div>
+        </div>
+      </div>
+      <div class="flow-step" style="animation-delay:.1s">
+        <div class="flow-num" style="background:var(--c3)">2</div>
+        <div class="flow-body">
+          <div class="flow-name">Cours IA personnalisés sur tes lacunes</div>
+          <div class="flow-desc">Sur chaque point faible identifié, le tuteur IA génère une explication ciblée avec analogies, mise en contexte clinique et mnémotechniques. Tu ne travailles que ce que tu ne sais pas.</div>
+          <div class="flow-tag" style="background:#F3EEFF;color:var(--c3)">Adapté à ton niveau · Mémorisation active</div>
+        </div>
+      </div>
+      <div class="flow-step" style="animation-delay:.15s">
+        <div class="flow-num" style="background:var(--green)">3</div>
+        <div class="flow-body">
+          <div class="flow-name">Concours blanc + plan de révision</div>
+          <div class="flow-desc">Un concours blanc complet (120 questions, toutes UE) reproduit les conditions réelles. À l'issue : radar mis à jour, score percentile, et plan de révision sur 4 semaines généré par l'IA.</div>
+          <div class="flow-tag" style="background:var(--green-l);color:var(--green-m)">Conditions réelles · Plan 4 semaines</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="acc-wrap">
+      <div class="flow-ttl">Détail par UE</div>
+      <div id="diagAcc"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ BATTERIE ═══ -->
+<div class="page" id="page-batterie">
+  <div class="hdr"><button class="hdr-back" onclick="go('diag')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button><div class="hdr-title" id="battTitle">Batterie — UE1</div><button class="hdr-menu-btn" onclick="openMenu()"><span></span><span></span><span></span></button></div>
+  <div class="scroll">
+    <div class="batt-ctx">
+      <div class="batt-ctx-lbl">Principe</div>
+      <div class="batt-ctx-t">5 questions ciblées par leçon évaluent ta maîtrise réelle. Le tuteur IA analyse tes erreurs et te propose ensuite un cours personnalisé uniquement sur ce que tu ne sais pas encore.</div>
+    </div>
+    <div class="batt-list" id="battList"></div>
+    <div style="padding:16px 20px 0"><button class="btn-p green" id="battBtn" onclick="startBatterie()">Commencer la batterie</button></div>
+  </div>
+</div>
+
+<!-- ═══ CONCOURS BLANC ═══ -->
+<div class="page" id="page-blanc">
+  <div class="hdr"><button class="hdr-back" onclick="go('diag')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button><div class="hdr-title">Concours blanc</div><button class="hdr-menu-btn" onclick="openMenu()"><span></span><span></span><span></span></button></div>
+  <div class="scroll">
+    <div style="padding:0 20px">
+      <div class="blanc-intro">
+        <div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px;position:relative">Simulation · Conditions réelles · Simultané</div>
+        <div style="font-size:20px;font-weight:800;color:white;line-height:1.2;margin-bottom:6px;position:relative">Concours blanc PASS<br>Mars 2026</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.55);position:relative;font-weight:500">Prochain concours : <strong style="color:white">Samedi 28 mars à 9h00</strong><br>Avec tous les étudiants Hippocrate.AI en simultané</div>
+        <div class="countdown-row" id="cdRow2" style="margin-top:12px"></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:16px">
+        <div class="card" style="padding:13px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--ink)">120</div><div style="font-size:9px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin-top:2px">Questions</div></div>
+        <div class="card" style="padding:13px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--ink)">10</div><div style="font-size:9px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin-top:2px">UE couvertes</div></div>
+        <div class="card" style="padding:13px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--ink)">3h</div><div style="font-size:9px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin-top:2px">Durée</div></div>
+      </div>
+
+      <div class="card" style="padding:15px 16px;margin-bottom:14px">
+        <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:12px">Répartition des questions</div>
+        <div id="blancBreak"></div>
+      </div>
+
+      <div class="card" style="padding:15px 16px;margin-bottom:20px">
+        <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:12px">Ce que tu obtiens à l'issue</div>
+        <div id="blancResults"></div>
+      </div>
+
+      <button class="btn-p green" onclick="toast('Le concours blanc démarrera le 28 mars à 9h avec tous les étudiants Hippocrate.AI — inscription confirmée !')">S'inscrire au concours du 28 mars</button>
+      <button class="btn-s" style="margin-top:9px" onclick="go('diag')">Retour au diagnostic</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════ DATA ═══════════════════ */
+const UES = [
+  {id:'ue1',num:'UE1',hex:'#FF6B35',name:'Atomes – Biomolécules – Génome – Bioénergétique',score:72,progress:72,
+   cours:[{id:'c1',name:'Atomistique et liaisons chimiques',desc:'Structure atomique, orbitales, liaisons',status:'ok'},
+          {id:'c2',name:'Chimie organique',desc:'Fonctions, stéréoisomérie, réactivité',status:'ok'},
+          {id:'c3',name:'Glucides',desc:'Oses, osides, glycoprotéines',status:'warn'},
+          {id:'c4',name:'Lipides',desc:'Acides gras, triglycérides, phospholipides',status:'bad'},
+          {id:'c5',name:'Protéines',desc:'Acides aminés, structures I–IV',status:'ok'},
+          {id:'c6',name:'Enzymologie',desc:'Cinétique, Michaelis-Menten, inhibiteurs',status:'warn'},
+          {id:'c7',name:'Génétique moléculaire',desc:'ADN, ARN, réplication, traduction',status:'bad'},
+          {id:'c8',name:'Bioénergétique',desc:'ATP, glycolyse, cycle de Krebs, CRM',status:'bad'}]},
+  {id:'ue2',num:'UE2',hex:'#3B6FFF',name:'La cellule et les tissus',score:45,progress:45,
+   cours:[{id:'c1',name:'Organisation de la cellule eucaryote',desc:'Membrane, cytosquelette, organites',status:'ok'},
+          {id:'c2',name:'Noyau et information génétique',desc:'Chromatine, chromosomes, cycle cellulaire',status:'warn'},
+          {id:'c3',name:'Membrane plasmique',desc:'Structure, fluidité, transport membranaire',status:'bad'},
+          {id:'c4',name:'Mitose et méiose',desc:'Phases, contrôle, ségrégation',status:'bad'},
+          {id:'c5',name:'Tissus épithéliaux',desc:'Classification, jonctions, polarité',status:'none'},
+          {id:'c6',name:'Tissus conjonctifs',desc:'Fibroblastes, collagène, MEC',status:'none'}]},
+  {id:'ue3',num:'UE3',hex:'#9B5DE5',name:'Organisation des appareils et systèmes',score:20,progress:20,
+   cours:[{id:'c1',name:'Système cardiovasculaire',desc:'Anatomie cardiaque, circulation',status:'warn'},
+          {id:'c2',name:'Système respiratoire',desc:'Poumons, mécanique ventilatoire',status:'bad'},
+          {id:'c3',name:'Système digestif',desc:'Tube digestif, glandes annexes',status:'none'},
+          {id:'c4',name:'Système rénal',desc:'Néphron, filtration glomérulaire',status:'none'},
+          {id:'c5',name:'Système nerveux central',desc:'Cerveau, moelle, méninges',status:'none'},
+          {id:'c6',name:'Système endocrinien',desc:'Hypothalamus, hypophyse, glandes',status:'none'}]},
+  {id:'ue4',num:'UE4',hex:'#00C48C',name:'Évaluation des méthodes d\'analyses',score:55,progress:55,
+   cours:[{id:'c1',name:'Statistiques descriptives',desc:'Tendance centrale, dispersion',status:'ok'},
+          {id:'c2',name:'Probabilités et lois de distribution',desc:'Lois normale, binomiale, Poisson',status:'ok'},
+          {id:'c3',name:'Tests statistiques',desc:'Test t, chi², ANOVA, p-valeur',status:'warn'},
+          {id:'c4',name:'Épidémiologie',desc:'Incidence, prévalence, biais',status:'bad'},
+          {id:'c5',name:'Lecture critique d\'articles',desc:'Méthodologie, niveaux de preuve',status:'none'}]},
+  {id:'ue5',num:'UE5',hex:'#F72585',name:'Bases physiques des méthodes d\'exploration',score:0,progress:0,
+   cours:[{id:'c1',name:'Physique des rayonnements',desc:'Radioactivité, rayons X, imagerie',status:'none'},
+          {id:'c2',name:'Optique et ultrasons',desc:'Échographie, microscopie, réfraction',status:'none'},
+          {id:'c3',name:'Hémodynamique',desc:'Débit cardiaque, pression artérielle',status:'none'}]},
+  {id:'ue6',num:'UE6',hex:'#0096C7',name:'Initiation à la connaissance du médicament',score:80,progress:80,
+   cours:[{id:'c1',name:'Pharmacocinétique',desc:'Absorption, distribution, métabolisme, élimination',status:'ok'},
+          {id:'c2',name:'Pharmacodynamie',desc:'Récepteurs, agonistes, antagonistes',status:'ok'},
+          {id:'c3',name:'Effets indésirables et interactions',desc:'Iatrogénèse, pharmacovigilance',status:'ok'},
+          {id:'c4',name:'Développement du médicament',desc:'Essais cliniques I–IV, AMM',status:'warn'}]},
+  {id:'ue7',num:'UE7',hex:'#FB8500',name:'Santé, société, humanité',score:10,progress:10,
+   cours:[{id:'c1',name:'Santé publique et déterminants',desc:'Système de santé français, indicateurs',status:'warn'},
+          {id:'c2',name:'Éthique médicale',desc:'Principes bioéthiques, droits des patients',status:'none'},
+          {id:'c3',name:'Psychologie de la santé',desc:'Relation soignant-soigné, représentations',status:'none'},
+          {id:'c4',name:'Droit médical',desc:'Responsabilité, secret médical, consentement',status:'none'}]},
+  {id:'ue8',num:'UE8',hex:'#E63946',name:'Anatomie',score:35,progress:35,
+   cours:[{id:'c1',name:'Tête et cou',desc:'Os du crâne, muscles, vascularisation, nerfs crâniens',status:'warn'},
+          {id:'c2',name:'Tronc et petit bassin',desc:'Vertèbres, cage thoracique, muscles abdominaux, bassin',status:'bad'},
+          {id:'c3',name:'Membre supérieur',desc:'Os, articulations, muscles, vaisseaux et nerfs du MS',status:'none'},
+          {id:'c4',name:'Membre inférieur',desc:'Os, articulations, muscles, vaisseaux et nerfs du MI',status:'none'},
+          {id:'c5',name:'Anatomie viscérale',desc:'Topographie des organes thoraciques et abdominaux',status:'warn'},
+          {id:'c6',name:'Système nerveux périphérique',desc:'Plexus, nerfs rachidiens, innervation',status:'none'}]},
+  {id:'ue9',num:'UE9',hex:'#2DC653',name:'Physiologie humaine',score:25,progress:25,
+   cours:[{id:'c1',name:'Physiologie cardiovasculaire',desc:'Cycle cardiaque, débit, régulation tensionnelle',status:'warn'},
+          {id:'c2',name:'Physiologie respiratoire',desc:'Ventilation, CVF, VEMS, échanges gazeux',status:'bad'},
+          {id:'c3',name:'Physiologie rénale',desc:'Filtration, réabsorption, sécrétion, équilibre acido-basique',status:'bad'},
+          {id:'c4',name:'Physiologie digestive',desc:'Motricité, sécrétions, absorption intestinale',status:'none'},
+          {id:'c5',name:'Physiologie musculaire',desc:'Contraction, couplage excitation-contraction',status:'none'}]},
+  {id:'ue10',num:'UE spé',hex:'#7B2D8B',name:'UE de spécialité',score:60,progress:60,
+   cours:[{id:'c1',name:'Histologie et embryologie',desc:'Tissus, organes, développement embryonnaire',status:'ok'},
+          {id:'c2',name:'Unité fœto-placentaire',desc:'Placenta, circulation fœtale, grossesse',status:'ok'},
+          {id:'c3',name:'Pharmacie galénique',desc:'Formes pharmaceutiques, excipients, biodisponibilité',status:'warn'},
+          {id:'c4',name:'Physiologie musculaire et rééducation',desc:'Biomécanique, réhabilitation, kinésithérapie',status:'none'},
+          {id:'c5',name:'Dents et milieu buccal',desc:'Anatomie dentaire, tissus parodontaux, odontologie',status:'none'}]},
+];
+
+/* QCM with 5 choices */
+const QCM = {
+  ue1:{title:'UE1 · Biochimie',questions:[
+    {q:'Quelle est la configuration électronique du carbone (Z=6) à l\'état fondamental ?',
+     ch:['1s² 2s² 2p⁶','1s² 2s² 2p²','1s² 2s¹ 2p³','1s² 2s² 2p⁴','1s² 2p⁴'],c:1,
+     e:'Le carbone a 6 électrons : 2 en 1s, 2 en 2s, 2 en 2p → 1s² 2s² 2p². Il forme 4 liaisons covalentes en hybridation sp³.',
+     reco:{concept:'Atomistique – configuration électronique',lacune:'Tu as confondu la répartition des électrons de valence. Pour le carbone, seule la couche n=2 est partiellement remplie.',analogy:'Imagine les couches électroniques comme des étages d\'un immeuble : chaque étage doit être rempli avant de monter au suivant. Le carbone a 2 "résidents" au 2e étage côté s, et 2 au 2e étage côté p — pas 6 en tout sur la couche 2.',action:'ue1','actionLabel':'Réviser l\'atomistique'}},
+    {q:'La constante de Michaelis-Menten (Km) correspond à la concentration en substrat pour laquelle :',
+     ch:['La vitesse de réaction est nulle','La vitesse est égale à Vmax/2','La concentration en enzyme est maximale','Le substrat est entièrement consommé','La réaction est à l\'équilibre'],c:1,
+     e:'Km = [S] quand v = Vmax/2. Un Km faible indique une forte affinité enzyme-substrat. Plus Km est bas, plus l\'enzyme est efficace à faible concentration.',
+     reco:{concept:'Enzymologie – cinétique de Michaelis',lacune:'La signification de Km est fondamentale pour comprendre l\'efficacité enzymatique et les mécanismes d\'inhibition.',analogy:'Pense à Km comme au "prix" que l\'enzyme fait payer au substrat pour réagir. Un Km bas = enzyme peu exigeante, très efficace même quand le substrat est rare (comme en situation de jeûne).',action:'ue1','actionLabel':'Réviser l\'enzymologie'}},
+    {q:'Le cycle de Krebs (cycle de l\'acide citrique) se déroule dans :',
+     ch:['Le cytoplasme','La membrane interne mitochondriale','La matrice mitochondriale','Le réticulum endoplasmique lisse','Le noyau cellulaire'],c:2,
+     e:'Le cycle de Krebs se déroule dans la matrice mitochondriale. Il produit par tour : 3 NADH, 1 FADH₂, 1 GTP et 2 CO₂.',
+     reco:{concept:'Bioénergétique – localisation cellulaire des voies métaboliques',lacune:'La confusion cytoplasme/matrice mitochondriale est très fréquente et souvent piégée au concours.',analogy:'La mitochondrie est une "centrale électrique" avec deux salles : la membrane interne (chaîne respiratoire) et la salle du fond – la matrice – où se déroule le cycle de Krebs, comme une salle de chauffe.',action:'ue1','actionLabel':'Réviser la bioénergétique'}},
+    {q:'Quel codon initie universellement la traduction chez les eucaryotes ?',
+     ch:['UGA','UAA','AUG','UAG','GUG (chez tous les eucaryotes)'],c:2,
+     e:'AUG code la méthionine initiatrice (Met) chez les eucaryotes. UAA, UAG et UGA sont les 3 codons stop. GUG peut initier chez les procaryotes mais pas chez les eucaryotes.',
+     reco:{concept:'Génétique moléculaire – traduction',lacune:'Les codons stop et initiateur sont systématiquement testés. La distinction procaryotes/eucaryotes est un piège classique.',analogy:'AUG est le "top départ" universel de la traduction. Sans lui, le ribosome ne sait pas où commencer à lire le message — comme une partition sans clé de sol.',action:'ue1','actionLabel':'Réviser la génétique moléculaire'}},
+    {q:'La β-oxydation des acides gras produit, par cycle, les coenzymes réduits suivants :',
+     ch:['2 NADH uniquement','1 FADH₂ et 1 NADH','1 FADH₂, 1 NADH et 1 acétyl-CoA','2 FADH₂ et 2 NADH','1 ATP et 1 NADH'],c:2,
+     e:'Chaque cycle de β-oxydation libère : 1 FADH₂ + 1 NADH + 1 acétyl-CoA. Pour un acide gras en C16 (palmitate), on compte 7 cycles, produisant 7 FADH₂ + 7 NADH + 8 acétyl-CoA.',
+     reco:{concept:'Bioénergétique – β-oxydation',lacune:'Le bilan énergétique de la β-oxydation est un incontournable du concours. Retenir le trio FADH₂ + NADH + acétyl-CoA par cycle est impératif.',analogy:'Imagine l\'acide gras comme une chaîne de wagons. À chaque station (cycle), on détache 2 wagons (acétyl-CoA) en collectant 2 pièces d\'énergie : une FADH₂ et une NADH.',action:'ue1','actionLabel':'Réviser la bioénergétique'}},
+    {q:'Les ponts disulfure (–S–S–) dans les protéines impliquent :',
+     ch:['Deux résidus lysine','Deux résidus cystéine','Un résidu méthionine et un résidu cystéine','Deux résidus méthionine','Un résidu sérine et un résidu cystéine'],c:1,
+     e:'Les ponts disulfure se forment par oxydation de deux groupements thiol (–SH) portés par deux résidus cystéine. Ils stabilisent la structure tertiaire (et quaternaire) des protéines.',
+     reco:{concept:'Structure des protéines – liaisons de stabilisation',lacune:'La distinction entre les acides aminés soufrés (Cys vs Met) et leur rôle structural est fréquemment testée.',analogy:'La cystéine est comme un velcro moléculaire : son groupement –SH peut se lier à un autre –SH voisin. La méthionine a aussi du soufre mais ne peut pas former ce type de pont.',action:'ue1','actionLabel':'Réviser les protéines'}},
+    {q:'La phosphorylation oxydative génère de l\'ATP grâce à :',
+     ch:['La phosphorylation au niveau du substrat dans la matrice','Un gradient de protons à travers la membrane interne mitochondriale','L\'hydrolyse directe du NADH','La décarboxylation du pyruvate','L\'isomérisation du glucose-6-phosphate'],c:1,
+     e:'L\'ATP synthase (complexe V) utilise le gradient électrochimique de protons (H⁺) généré par les complexes I-IV de la chaîne respiratoire pour synthétiser de l\'ATP. C\'est le mécanisme de Mitchell (chemiosmose).',
+     reco:{concept:'Bioénergétique – chaîne respiratoire et ATP synthase',lacune:'Le mécanisme de la chemiosmose (gradient de protons + ATP synthase) est le concept central de la bioénergétique mitochondriale.',analogy:'Imagine une roue à eau : l\'eau (= les protons H⁺) qui tombe du niveau haut vers le bas fait tourner la roue (= l\'ATP synthase), qui à son tour produit de l\'énergie (= ATP). Sans la différence de niveau, rien ne bouge.',action:'ue1','actionLabel':'Réviser la bioénergétique'}},
+    {q:'Parmi les propositions suivantes, laquelle définit correctement un inhibiteur non-compétitif ?',
+     ch:['Il entre en compétition avec le substrat pour le site actif','Il se lie sur le site actif et ne peut être déplacé par le substrat','Il se lie sur un site allostérique et diminue Vmax sans modifier Km','Il augmente le Km apparent sans modifier Vmax','Il active l\'enzyme en se liant au site allostérique'],c:2,
+     e:'L\'inhibiteur non-compétitif se fixe sur un site allostérique (différent du site actif), il ne peut être déplacé par le substrat. Il réduit Vmax mais ne modifie pas Km. Contrairement à l\'inhibiteur compétitif qui augmente Km sans toucher Vmax.',
+     reco:{concept:'Enzymologie – types d\'inhibition',lacune:'La distinction compétitif/non-compétitif est un classique du concours. Retenir l\'effet sur Km et Vmax est la clé.',analogy:'L\'inhibiteur compétitif est comme un faux client qui bloque la caisse : si on insiste (beaucoup de substrat), il part. L\'inhibiteur non-compétitif, lui, bloque la caissière directement — peu importe combien de clients arrivent, elle travaille moins vite.',action:'ue1','actionLabel':'Réviser l\'enzymologie'}},
+    {q:'Lors de la glycolyse, quelle enzyme catalyse la phosphorylation du fructose-6-phosphate en fructose-1,6-bisphosphate ?',
+     ch:['Hexokinase','Phosphofructokinase-1 (PFK-1)','Pyruvate kinase','Aldolase','Phosphoglycérate kinase'],c:1,
+     e:'La PFK-1 est l\'enzyme régulatrice clé de la glycolyse. Elle est activée par l\'AMP et inhibée par l\'ATP et le citrate. C\'est l\'étape limitante principale de la voie glycolytique.',
+     reco:{concept:'Bioénergétique – régulation de la glycolyse',lacune:'Les enzymes-clés et leurs régulateurs sont systématiquement testés. PFK-1 est l\'enzyme la plus importante de la glycolyse.',analogy:'PFK-1 est comme le feu rouge principal de la glycolyse. Quand la cellule est "riche" en énergie (ATP élevé), le feu passe au rouge et tout ralentit. Quand elle manque d\'énergie (AMP élevé), le feu passe au vert et la glycolyse s\'accélère.',action:'ue1','actionLabel':'Réviser la bioénergétique'}},
+    {q:'Combien de molécules d\'ATP sont produites au total lors de l\'oxydation complète d\'une molécule de glucose (glycolyse + cycle de Krebs + phosphorylation oxydative) ?',
+     ch:['2 ATP','8 ATP','30–32 ATP','36–38 ATP (valeur historique)','10 ATP'],c:2,
+     e:'La valeur actuelle acceptée est 30–32 ATP par glucose (rendement réel). La valeur historique de 36–38 ATP est obsolète. La différence vient des ratios P/O réels des complexes I (2.5 ATP) et II (1.5 ATP).',
+     reco:{concept:'Bioénergétique – bilan énergétique global',lacune:'Le bilan énergétique du glucose est un incontournable. Attention à la mise à jour : 30-32 ATP (valeur actuelle), et non 36-38 ATP (valeur historique encore dans certains polycopiés).',analogy:'C\'est comme compter le rendement d\'un moteur : les anciens manuels surestimaient le bilan. En conditions physiologiques réelles, on récupère environ 30-32 ATP, pas 38 — comme un moteur qui ne tourne jamais à rendement maximal théorique.',action:'ue1','actionLabel':'Réviser la bioénergétique'}},
+  ]},
+  ue6:{title:'UE6 · Pharmacologie',questions:[
+    {q:'L\'effet de premier passage hépatique désigne :',
+     ch:['La fixation du médicament aux protéines plasmatiques','Le métabolisme hépatique du médicament avant d\'atteindre la circulation générale','La filtration glomérulaire du médicament','La distribution du médicament dans les tissus adipeux','La sécrétion biliaire du médicament'],c:1,
+     e:'Le premier passage hépatique (first-pass effect) est le métabolisme pré-systémique du médicament par le foie (et parfois la paroi intestinale) après absorption orale, avant d\'atteindre la circulation générale. Il réduit la biodisponibilité.',
+     reco:{concept:'Pharmacocinétique – biodisponibilité et premier passage hépatique',lacune:'Le premier passage hépatique explique pourquoi certains médicaments oraux ont une biodisponibilité très faible (ex : propranolol ~25%, morphine ~33%).',analogy:'C\'est comme si votre salaire passait d\'abord par les impôts (foie) avant d\'atterrir sur votre compte courant (circulation générale). Selon le taux d\'imposition, il vous reste plus ou moins.',action:'ue6','actionLabel':'Réviser la pharmacocinétique'}},
+    {q:'Un antagoniste compétitif pure se caractérise par :',
+     ch:['Une diminution de Vmax sans modification de Km','Un déplacement de la courbe dose-réponse vers la droite sans modification de l\'Emax','Une liaison irréversible au récepteur','Une activation partielle du récepteur','Une augmentation de l\'Emax de l\'agoniste'],c:1,
+     e:'Un antagoniste compétitif se lie de façon réversible au même site que l\'agoniste. Il augmente l\'EC50 (déplace la courbe vers la droite) mais ne modifie pas l\'Emax : l\'effet maximal reste accessible si on augmente suffisamment la dose d\'agoniste.',
+     reco:{concept:'Pharmacodynamie – antagonisme compétitif vs non-compétitif',lacune:'La distinction antagonisme compétitif/non-compétitif est fondamentale. Compétitif = Emax conservé, EC50 augmenté. Non-compétitif = Emax diminué, EC50 variable.',analogy:'Un antagoniste compétitif est comme un concurrent qui prend votre place dans la file, mais que vous pouvez "pousser" si vous êtes assez nombreux (forte dose d\'agoniste). Un antagoniste non-compétitif, lui, a verrouillé la porte : peu importe combien vous êtes, vous n\'entrez plus.',action:'ue6','actionLabel':'Réviser la pharmacodynamie'}},
+    {q:'La formule de la demi-vie d\'élimination est :',
+     ch:['t½ = Vd × Cl','t½ = Cl / Vd','t½ = 0,693 × Vd / Cl','t½ = 0,693 × Cl / Vd','t½ = Vd / 0,693'],c:2,
+     e:'t½ = 0,693 × Vd / Cl. 0,693 = ln2. La t½ augmente quand le volume de distribution (Vd) augmente ou quand la clairance (Cl) diminue. Après 5 demi-vies, >97% est éliminé.',
+     reco:{concept:'Pharmacocinétique – demi-vie et implications cliniques',lacune:'La formule de t½ et ses implications sont essentielles : adaptation en insuffisance rénale/hépatique, espacement des prises, délai d\'état d\'équilibre.',analogy:'Le Vd est le "cachot" du médicament (plus il se cache dans les tissus, plus il met du temps à partir), et la Cl est la "sortie de secours". Une grande cachette + petite sortie = longue demi-vie.',action:'ue6','actionLabel':'Réviser la pharmacocinétique'}},
+    {q:'L\'index thérapeutique (IT) est défini par le rapport :',
+     ch:['EC50 / IC50','Vmax / Km','DL50 / DE50','DE50 / DL50','Cl / Vd'],c:2,
+     e:'IT = DL50 / DE50. Un IT élevé = grande marge de sécurité. Un IT étroit (< 2–3) comme pour la digoxine, le lithium ou la warfarine nécessite une surveillance thérapeutique rapprochée.',
+     reco:{concept:'Pharmacologie – index thérapeutique et marge de sécurité',lacune:'Les médicaments à IT étroit sont systématiquement cités au concours. Retenir : digoxine, lithium, warfarine, aminosides, ciclosporine.',analogy:'L\'IT est comme la marge entre la dose qui guérit et celle qui tue. Un couteau de cuisine très affûté est efficace mais nécessite de la précision — c\'est un médicament à IT étroit.',action:'ue6','actionLabel':'Réviser la pharmacologie générale'}},
+    {q:'Le cytochrome CYP3A4 métabolise approximativement quel pourcentage des médicaments utilisés en thérapeutique ?',
+     ch:['5–10%','20–25%','35–40%','50–60%','70–80%'],c:3,
+     e:'CYP3A4 est l\'isoenzyme CYP450 la plus abondante du foie et de l\'intestin. Il métabolise environ 50–60% des médicaments. C\'est l\'enzyme la plus impliquée dans les interactions médicamenteuses.',
+     reco:{concept:'Pharmacocinétique – métabolisme et CYP450',lacune:'CYP3A4 est l\'enzyme la plus testée au concours. Connaître ses inducteurs (rifampicine, phénobarbital, millepertuis) et inhibiteurs (kétoconazole, érythromycine, jus de pamplemousse) est indispensable.',analogy:'CYP3A4 est la "grande usine" du métabolisme hépatique. Quand un inducteur l\'active, c\'est comme ajouter des équipes : tous les médicaments passant par là sont détruits plus vite. Quand un inhibiteur le bloque, les médicaments s\'accumulent — risque de surdosage.',action:'ue6','actionLabel':'Réviser le métabolisme médicamenteux'}},
+    {q:'Un médicament présentant un volume de distribution (Vd) de 500L chez un adulte de 70 kg est vraisemblablement :',
+     ch:['Principalement retenu dans le plasma (peu diffusant)','Fortement lié aux protéines plasmatiques seulement','Très lipophile avec une distribution tissulaire étendue','Éliminé rapidement par voie rénale','Un acide faible à pH physiologique'],c:2,
+     e:'Un Vd de 500L est très supérieur au volume corporel total (~42L pour 70kg). Cela signifie que le médicament se distribue massivement dans les tissus (surtout adipeux), ce qui est caractéristique d\'un composé très lipophile.',
+     reco:{concept:'Pharmacocinétique – volume de distribution',lacune:'Interpréter un Vd est une compétence directement testée. Vd < 5L = confiné au plasma. Vd 5–15L = distribué dans le LEC. Vd > 40L = distribution tissulaire étendue.',analogy:'Le Vd est comme la taille réelle du terrain qu\'occupe un acteur invisible. Si son Vd est 500L alors que le corps n\'en contient que 42, c\'est qu\'il se cache massivement dans les graisses — comme un spéléologue dans des grottes inaccessibles.',action:'ue6','actionLabel':'Réviser la distribution médicamenteuse'}},
+    {q:'La clairance rénale d\'un médicament est égale à sa clairance de la créatinine (125 mL/min) lorsque :',
+     ch:['Il est entièrement réabsorbé par les tubules','Il est filtré et sécrété en parts égales','Il est filtré par le glomérule et ni réabsorbé ni sécrété','Il est lié à 100% aux protéines plasmatiques','Il présente un Vd très élevé'],c:2,
+     e:'Si un médicament est uniquement filtré (pas réabsorbé ni sécrété), sa clairance rénale = débit de filtration glomérulaire (DFG = ~125 mL/min). La créatinine est le marqueur endogène de référence car elle vérifie ces conditions.',
+     reco:{concept:'Pharmacocinétique rénale – filtration, réabsorption, sécrétion',lacune:'Les 3 mécanismes rénaux et leurs effets sur la clairance sont régulièrement testés. La sécrétion active augmente la clairance au-delà du DFG. La réabsorption la diminue.',analogy:'Le rein est un portail avec 3 mécanismes : la porte principale (filtration, tout le monde passe), une sortie express (sécrétion active, certains partent plus vite) et un guichet de récupération (réabsorption, certains reviennent). Seuls les médicaments qui ne passent que la porte principale ont la clairance du DFG.',action:'ue6','actionLabel':'Réviser l\'élimination rénale'}},
+    {q:'Le délai d\'atteinte de l\'état d\'équilibre (Css) lors d\'une administration répétée correspond approximativement à :',
+     ch:['1 demi-vie','2 demi-vies','5 demi-vies','10 demi-vies','Il dépend uniquement de la dose'],c:2,
+     e:'L\'état d\'équilibre est atteint après ~5 demi-vies (environ 97% du plateau). C\'est vrai quelle que soit la dose ou la fréquence d\'administration — seule la demi-vie détermine le délai.',
+     reco:{concept:'Pharmacocinétique – état d\'équilibre et implications',lacune:'Le délai d\'état d\'équilibre est fondamental pour comprendre les délais d\'action thérapeutique. Pour un médicament à t½ de 24h (ex: amlodipine), l\'état d\'équilibre est atteint en ~5 jours.',analogy:'C\'est comme remplir une baignoire percée : le niveau monte jusqu\'à ce que le débit entrant (doses) = débit sortant (élimination). Peu importe la taille du robinet (dose), c\'est la taille du trou (t½) qui détermine combien de temps ça prend.',action:'ue6','actionLabel':'Réviser la pharmacocinétique'}},
+    {q:'Parmi les médicaments suivants, lequel est un inducteur du CYP3A4 ?',
+     ch:['Kétoconazole','Érythromycine','Rifampicine','Verapamil','Jus de pamplemousse'],c:2,
+     e:'La rifampicine est l\'inducteur enzymatique prototype (CYP3A4, CYP2C9, CYP2C19, CYP2B6). Les autres propositions sont des inhibiteurs. Le millepertuis est un autre inducteur notable.',
+     reco:{concept:'Interactions médicamenteuses – inducteurs et inhibiteurs enzymatiques',lacune:'Connaître les inducteurs (rifampicine, phénobarbital, carbamazépine, millepertuis) et inhibiteurs (kétoconazole, érythromycine, verapamil, pamplemousse) est impératif.',analogy:'Un inducteur est comme un chef d\'équipe qui embauche plus d\'ouvriers CYP : les médicaments co-administrés sont détruits plus vite → perte d\'efficacité. Un inhibiteur licencie des ouvriers : les médicaments s\'accumulent → risque de toxicité.',action:'ue6','actionLabel':'Réviser les interactions médicamenteuses'}},
+    {q:'La biodisponibilité absolue d\'un médicament administré par voie intraveineuse est :',
+     ch:['Variable selon le médicament','Environ 80%','Toujours 100%','Dépendante du volume de distribution','Calculée par le rapport AUCiv / AUCorale'],c:2,
+     e:'Par définition, la voie IV injecte directement le médicament dans la circulation générale, court-circuitant l\'absorption et le premier passage hépatique. La biodisponibilité IV est donc toujours 100% et sert de référence pour calculer la biodisponibilité d\'autres voies.',
+     reco:{concept:'Pharmacocinétique – biodisponibilité absolue',lacune:'La définition de la biodisponibilité absolue (F) et sa mesure par les AUC est fondamentale. F = AUC_voie / AUC_IV × 100.',analogy:'La voie IV, c\'est le chemin direct : pas de douane (premier passage hépatique), pas de frontières (absorption variable). 100% de la dose arrive à destination.',action:'ue6','actionLabel':'Réviser la pharmacocinétique'}},
+  ]},
+};
+
+const BATT = [
+  {name:'Atomistique et liaisons chimiques',score:92,done:true},
+  {name:'Chimie organique',score:88,done:true},
+  {name:'Glucides',score:61,done:true},
+  {name:'Lipides',score:40,done:false,active:true},
+  {name:'Protéines',score:null,done:false},
+  {name:'Enzymologie',score:null,done:false},
+  {name:'Génétique moléculaire',score:null,done:false},
+  {name:'Bioénergétique',score:null,done:false},
+];
+
+const BLANC_UES = [
+  {num:'UE1',name:'Biochimie',q:24,hex:'#FF6B35'},
+  {num:'UE2',name:'Biologie cellulaire',q:16,hex:'#3B6FFF'},
+  {num:'UE3',name:'Appareils et systèmes',q:16,hex:'#9B5DE5'},
+  {num:'UE4',name:'Méthodes et analyses',q:12,hex:'#00C48C'},
+  {num:'UE5',name:'Physique médicale',q:8,hex:'#F72585'},
+  {num:'UE6',name:'Pharmacologie',q:12,hex:'#0096C7'},
+  {num:'UE7',name:'Santé & Société',q:8,hex:'#FB8500'},
+  {num:'UE8',name:'Anatomie',q:12,hex:'#E63946'},
+  {num:'UE9',name:'Physiologie',q:8,hex:'#2DC653'},
+  {num:'UE spé',name:'Spécialité',q:4,hex:'#7B2D8B'},
+];
+
+const DIAG_DATA = [
+  {ue:UES[5],level:'ok',label:'Maîtrisée'},
+  {ue:UES[0],level:'warn',label:'En cours'},
+  {ue:UES[3],level:'warn',label:'En cours'},
+  {ue:UES[7],level:'warn',label:'En cours'},
+  {ue:UES[1],level:'bad',label:'À renforcer'},
+  {ue:UES[2],level:'bad',label:'À renforcer'},
+  {ue:UES[6],level:'bad',label:'À renforcer'},
+  {ue:UES[8],level:'bad',label:'À renforcer'},
+  {ue:UES[4],level:'none',label:'Non commencé'},
+  {ue:UES[9],level:'none',label:'Non commencé'},
+];
+
+const GENERIC_REPLIES = [
+  'Très bon raisonnement. Pour aller plus loin : comment ce mécanisme est-il régulé en conditions pathologiques ?',
+  'C\'est un bon début. Précisez les acteurs moléculaires — quelles enzymes jouent un rôle central ici ?',
+  'Intéressant — vous faites le lien structure-fonction. Comment une dysfonction se traduit-elle cliniquement ?',
+  'Exact. Ce mécanisme est fondamental. Pouvez-vous l\'appliquer à une pathologie courante ?',
+  'Bien vu. En quoi ce concept constitue-t-il une cible thérapeutique ? Donnez un exemple de médicament.',
+];
+
+/* ═══════════════════ STATE ═══════════════════ */
+let cur = {ue:null,cours:null};
+let qcmS = {ueId:null,idx:0,sel:null,answers:[],validated:false,wrongRecos:[]};
+let chat = [];
+
+/* ═══════════════════ NAV ═══════════════════ */
+/* ═══════════════════ NAV ═══════════════════ */
+// Pages that show the bottom nav
+const NAV_PAGES = new Set(['home','ues','qcmUes','diag']);
+// Map page id → nav button id
+const NAV_MAP = {home:'nav-home', ues:'nav-ues', cours:'nav-ues', qcmUes:'nav-qcmUes', qcm:'nav-qcmUes', results:'nav-qcmUes', diag:'nav-diag', batterie:'nav-diag', blanc:'nav-diag', reco:'nav-diag'};
+
+function go(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const p=document.getElementById('page-'+id);
+  if(p){p.classList.add('active');window.scrollTo(0,0);}
+
+  // Nav visibility & active state
+  const nav=document.getElementById('globalNav');
+  if(nav){
+    nav.style.display = id==='tutor' ? 'none' : 'flex';
+    document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+    const activeBtn = NAV_MAP[id] ? document.getElementById(NAV_MAP[id]) : null;
+    if(activeBtn) activeBtn.classList.add('active');
+  }
+
+  if(id==='ues') renderUEs();
+  if(id==='qcmUes') renderQCMGrid();
+  if(id==='diag'){renderDiagAcc();drawRadar('diagRadarSvg',130,1.0);buildCountdown();drawDiagGauss();}
+  if(id==='batterie') renderBatterie();
+  if(id==='blanc'){renderBlanc();buildCountdown('cdRow2');}
+}
+function openMenu(){document.getElementById('overlay').classList.add('open');}
+function closeMenu(){document.getElementById('overlay').classList.remove('open');}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3200);}
+
+/* ═══════════════════ RADAR ENGINE ═══════════════════ */
+function drawRadar(svgId, size, scale=1){
+  const el = document.getElementById(svgId);
+  if(!el) return;
+  const N=UES.length, CX=size*scale, CY=size*scale, R=size*0.78*scale;
+  const LABEL_PAD = size*0.26*scale; // extra padding for labels — prevents overlap
+  const ang=i=>(i*2*Math.PI/N)-Math.PI/2;
+  const pt=(i,r)=>[CX+r*Math.cos(ang(i)),CY+r*Math.sin(ang(i))];
+
+  let h='';
+  // Grid rings
+  [20,40,60,80,100].forEach(p=>{
+    const pts=UES.map((_,i)=>pt(i,R*p/100).join(',')).join(' ');
+    h+=`<polygon points="${pts}" fill="none" stroke="rgba(255,255,255,.07)" stroke-width=".8"/>`;
+  });
+  // Axes
+  UES.forEach((_,i)=>{const[x,y]=pt(i,R);h+=`<line x1="${CX}" y1="${CY}" x2="${x}" y2="${y}" stroke="rgba(255,255,255,.08)" stroke-width=".8"/>`;});
+  // Data fill
+  const dpts=UES.map((u,i)=>pt(i,R*u.score/100));
+  h+=`<polygon points="${dpts.map(p=>p.join(',')).join(' ')}" fill="rgba(0,196,140,.18)" stroke="#00C48C" stroke-width="2" stroke-linejoin="round" style="opacity:0;animation:rIn .9s cubic-bezier(.22,1,.36,1) .2s both"/>`;
+  // Dots
+  dpts.forEach(([x,y],i)=>{h+=`<circle cx="${x}" cy="${y}" r="${4*scale}" fill="${UES[i].hex}" stroke="white" stroke-width="${1.5*scale}" style="opacity:0;animation:rIn .5s cubic-bezier(.22,1,.36,1) ${.2+i*.07}s both"/>`;});
+
+  // Labels — placed further out with smart anchor + vertical offset to avoid overlap
+  UES.forEach((u,i)=>{
+    const a=ang(i);
+    const lx=CX+(R+LABEL_PAD)*Math.cos(a);
+    const ly=CY+(R+LABEL_PAD)*Math.sin(a);
+    // horizontal anchor
+    const anchor=lx<CX-4?'end':lx>CX+4?'start':'middle';
+    // vertical offset: if label is above center, put number above text; else below
+    const numDy = ly < CY ? -13 : 13;
+    const fs=Math.round(10*scale);
+    const fs2=Math.round(9*scale);
+    h+=`<text x="${lx}" y="${ly}" text-anchor="${anchor}" dominant-baseline="middle" font-size="${fs}" font-weight="700" font-family="Plus Jakarta Sans,sans-serif" fill="rgba(255,255,255,.8)">${u.num}</text>`;
+    h+=`<text x="${lx}" y="${ly+numDy}" text-anchor="${anchor}" dominant-baseline="middle" font-size="${fs2}" font-weight="600" font-family="Plus Jakarta Sans,sans-serif" fill="rgba(255,255,255,.45)">${u.score}%</text>`;
+  });
+
+  el.innerHTML=h;
+}
+
+/* shared Gauss drawing — svgId, width, height, percentile (0-1), compact (bool) */
+function renderGauss(svgId, W, H, percentile){
+  const el=document.getElementById(svgId); if(!el) return;
+  const gauss=x=>Math.exp(-0.5*Math.pow((x-0.5)/0.18,2));
+  const steps=240;
+  const pts=[]; // full curve points
+  for(let i=0;i<=steps;i++){const t=i/steps;pts.push([t*W, H-6-(gauss(t)*0.88*(H-14))]);}
+  const curveD='M '+pts.map(p=>p.join(',')).join(' L ');
+  const cutX=percentile*W;
+  // Find Y at cut
+  const cutIdx=Math.round(percentile*steps);
+  const cutY=pts[cutIdx]?pts[cutIdx][1]:H/2;
+  // Left fill polygon
+  const leftPoly=['0,'+H,...pts.slice(0,cutIdx+1).map(p=>p.join(',')),''+cutX+','+H].join(' ');
+  // Right fill polygon
+  const rightPoly=[''+cutX+','+H,...pts.slice(cutIdx).map(p=>p.join(',')),W+','+H].join(' ');
+  el.innerHTML=`
+    <defs><clipPath id="cl_${svgId}"><rect x="0" y="0" width="${cutX}" height="${H}"/></clipPath></defs>
+    <polygon points="${leftPoly}" fill="rgba(0,196,140,.16)"/>
+    <polygon points="${rightPoly}" fill="rgba(255,255,255,.03)"/>
+    <path d="${curveD}" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="${curveD}" fill="none" stroke="var(--green)" stroke-width="2.2" stroke-linejoin="round" clip-path="url(#cl_${svgId})"/>
+    <line x1="${cutX}" y1="${cutY-3}" x2="${cutX}" y2="${H}" stroke="var(--green)" stroke-width="1.5" stroke-dasharray="3 3"/>
+    <circle cx="${cutX}" cy="${cutY}" r="5" fill="var(--green)" stroke="#0F1021" stroke-width="2" style="animation:rIn .5s cubic-bezier(.22,1,.36,1) .4s both;opacity:0"/>
+    <rect x="${Math.min(cutX-28,W-62)}" y="${cutY-22}" width="56" height="16" rx="5" fill="var(--green)"/>
+    <text x="${Math.min(cutX,W-34)}" y="${cutY-14}" text-anchor="middle" dominant-baseline="middle" font-size="9.5" font-weight="800" font-family="Plus Jakarta Sans,sans-serif" fill="white">Top ${Math.round((1-percentile)*100)}%</text>
+  `;
+}
+function drawHomeGauss(){ renderGauss('homeGaussSvg',320,86,0.65); }
+function drawDiagGauss(){ renderGauss('diagGaussSvg',320,68,0.65); }
+
+/* ═══════════════════ COUNTDOWN ═══════════════════ */
+function buildCountdown(targetId='cdRow'){
+  const el=document.getElementById(targetId); if(!el) return;
+  // Next blanc: 28 March 2026 09:00 Paris time
+  const target=new Date('2026-03-28T09:00:00+01:00');
+  function update(){
+    const now=new Date(), diff=target-now;
+    if(diff<=0){el.innerHTML='<div style="font-size:13px;font-weight:700;color:var(--green);position:relative">En cours maintenant !</div>';return;}
+    const d=Math.floor(diff/864e5), h=Math.floor((diff%864e5)/36e5), m=Math.floor((diff%36e5)/6e4), s=Math.floor((diff%6e4)/1e3);
+    el.innerHTML=`
+      <div class="cd-block"><div class="cd-num">${String(d).padStart(2,'0')}</div><div class="cd-lbl">Jours</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-block"><div class="cd-num">${String(h).padStart(2,'0')}</div><div class="cd-lbl">Heures</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-block"><div class="cd-num">${String(m).padStart(2,'0')}</div><div class="cd-lbl">Min</div></div>
+      <div class="cd-sep">:</div>
+      <div class="cd-block"><div class="cd-num">${String(s).padStart(2,'0')}</div><div class="cd-lbl">Sec</div></div>`;
+  }
+  update(); clearInterval(window['_cd_'+targetId]); window['_cd_'+targetId]=setInterval(update,1000);
+}
+
+/* ═══════════════════ UE LIST ═══════════════════ */
+function renderUEs(){
+  document.getElementById('ueList').innerHTML=UES.map((u,i)=>`
+    <button class="ue-card" style="animation-delay:${i*.05}s" onclick="openUE('${u.id}')">
+      <div class="ue-bar" style="background:${u.hex}"></div>
+      <div class="ue-body">
+        <div class="ue-tag">${u.num}</div>
+        <div class="ue-name">${u.name}</div>
+        <div class="ue-pr"><div class="pbar"><div class="pfill" style="background:${u.hex};width:${u.progress}%"></div></div><div class="ppct">${u.progress}%</div></div>
+      </div>
+      <div class="ue-play"><div class="play-c" style="background:${u.hex}"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></div></div>
+    </button>`).join('');
+}
+function openUE(id){cur.ue=UES.find(u=>u.id===id);renderCours();go('cours');}
+
+/* ═══════════════════ COURS ═══════════════════ */
+function renderCours(){
+  const u=cur.ue;
+  document.getElementById('coursHdrT').textContent=u.num+' · Leçons';
+  document.getElementById('cHero').style.background=u.hex;
+  document.getElementById('cHeroUE').textContent=u.num;
+  document.getElementById('cHeroTitle').textContent=u.name;
+  document.getElementById('cHeroSub').textContent=`${u.cours.length} leçons · ${u.progress}% maîtrisé`;
+  document.getElementById('cList').innerHTML=u.cours.map((c,i)=>`
+    <button class="c-item" style="animation-delay:${i*.05}s" onclick="openCours('${u.id}','${c.id}')">
+      <div class="c-num" style="background:${u.hex}22;color:${u.hex}">${i+1}</div>
+      <div class="c-inf"><div class="c-t">${c.name}</div><div class="c-d">${c.desc}</div></div>
+      <div class="c-dot ${c.status}"></div>
+      <div class="c-chev"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+    </button>`).join('');
+}
+function openCours(ueId,coursId){
+  cur.ue=UES.find(u=>u.id===ueId);cur.cours=cur.ue.cours.find(c=>c.id===coursId);startTutor();
+}
+
+/* ═══════════════════ TUTOR ═══════════════════ */
+function startTutor(){
+  chat=[];
+  document.getElementById('tutorBack').onclick=()=>go('cours');
+  document.getElementById('tutorTitle').textContent=cur.cours.name;
+  renderChat();go('tutor');
+  setTimeout(()=>{
+    const Qs={'ue1-c4':'Les acides gras saturés et insaturés ont des propriétés très différentes. Quelle différence structurelle explique leurs différences de fluidité et de point de fusion ?',
+    'ue1-c7':'Décris les grandes étapes de la réplication de l\'ADN chez les eucaryotes. Quelles enzymes y participent ?',
+    'ue1-c8':'Quel est le bilan énergétique complet de la glycolyse ? Cite les étapes régulatrices et leurs enzymes.',
+    'ue6-c1':'Explique les 4 processus ADME et comment ils influencent la courbe de concentration plasmatique.',
+    'ue8-c1':'Décris les principaux repères anatomiques de la base du crâne et leur importance clinique.',
+    'ue9-c2':'Explique le mécanisme de la régulation de la ventilation par les chémorécepteurs centraux et périphériques.'};
+    const q=Qs[cur.ue.id+'-'+cur.cours.id]||`Qu'est-ce que tu sais déjà sur "${cur.cours.name}" ? Explique comme si tu l'enseignais à un camarade.`;
+    addMsg('ai',q);
+  },700);
+}
+function addMsg(from,text){chat.push({from,text});renderChat();setTimeout(()=>{const a=document.getElementById('chatArea');a.scrollTop=a.scrollHeight;},80);}
+function renderChat(){
+  const AV=`<div class="tutor-av"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg></div>`;
+  document.getElementById('chatArea').innerHTML=chat.map(m=>m.from==='ai'?`<div class="msg-row">${AV}<div class="bbl-ai">${m.text}</div></div>`:`<div class="msg-row user"><div class="bbl-user">${m.text}</div></div>`).join('');
+}
+function sendMsg(){
+  const inp=document.getElementById('chatInput'),txt=inp.value.trim();if(!txt)return;
+  addMsg('user',txt);inp.value='';
+  const a=document.getElementById('chatArea');
+  const tid=document.createElement('div');tid.className='msg-row';tid.id='typing';
+  tid.innerHTML=`<div class="tutor-av"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg></div><div class="typing"><div class="td"></div><div class="td"></div><div class="td"></div></div>`;
+  a.appendChild(tid);a.scrollTop=a.scrollHeight;
+  setTimeout(()=>{const el=document.getElementById('typing');if(el)el.remove();addMsg('ai',GENERIC_REPLIES[Math.floor(Math.random()*GENERIC_REPLIES.length)]);},1400+Math.random()*500);
+}
+
+/* ═══════════════════ QCM GRID ═══════════════════ */
+function renderQCMGrid(){
+  document.getElementById('qcmGrid').innerHTML=UES.map((u,i)=>{
+    const has=!!QCM[u.id];
+    return `<button class="qcm-tile ${has?'':'locked'}" style="background:${u.hex};animation-delay:${i*.05}s"
+      onclick="${has?`startQCM('${u.id}')`:`toast('QCM ${u.num} bientôt disponible')`}">
+      <div class="qt-num">${u.num}</div><div class="qt-name">${u.name}</div>
+      ${has?'<div class="qt-badge">10 questions</div>':'<div class="qt-soon">Bientôt</div>'}
+    </button>`;
+  }).join('');
+}
+
+/* ═══════════════════ QCM ENGINE ═══════════════════ */
+function startQCM(id){qcmS={ueId:id,idx:0,sel:null,answers:[],validated:false,wrongRecos:[]};renderQ();go('qcm');}
+function heartSVG(lost){return`<span class="qcm-heart${lost?' lost':''}"><svg width="15" height="15" viewBox="0 0 24 24" fill="${lost?'none':'var(--red)'}" stroke="${lost?'var(--border2)':'none'}" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>`;}
+function updateLives(){const e=qcmS.answers.filter(a=>!a).length;document.getElementById('qcmLives').innerHTML=[0,1,2].map(i=>heartSVG(i<e)).join('');}
+function renderQ(){
+  const{ueId,idx}=qcmS,data=QCM[ueId],q=data.questions[idx],total=data.questions.length;
+  document.getElementById('qcmTitle').textContent=data.title;
+  document.getElementById('qcmCtr').textContent=`${idx+1}/${total}`;
+  document.getElementById('qcmPf').style.width=`${((idx+1)/total)*100}%`;
+  updateLives();
+  document.getElementById('qText').textContent=q.q;
+  document.getElementById('fbStrip').className='hidden';
+  qcmS.sel=null;qcmS.validated=false;
+  const L=['A','B','C','D','E'];
+  document.getElementById('choices').innerHTML=q.ch.map((c,i)=>`<button class="choice" id="ch${i}" onclick="selectChoice(${i})"><div class="c-letter">${L[i]}</div>${c}</button>`).join('');
+  const vb=document.getElementById('valBtn');vb.textContent='Valider ma réponse';vb.className='val-btn';vb.onclick=validateOrNext;
+}
+function selectChoice(i){
+  if(qcmS.validated)return;qcmS.sel=i;
+  document.querySelectorAll('.choice').forEach((b,idx)=>b.className='choice'+(idx===i?' selected':''));
+  document.getElementById('valBtn').classList.add('ready');
+}
+function validateOrNext(){
+  if(!qcmS.validated){
+    if(qcmS.sel===null)return;qcmS.validated=true;
+    const q=QCM[qcmS.ueId].questions[qcmS.idx],ok=qcmS.sel===q.c;
+    qcmS.answers.push(ok);
+    if(!ok&&q.reco)qcmS.wrongRecos.push({q:q.q,reco:q.reco,qIdx:qcmS.idx+1});
+    document.querySelectorAll('.choice').forEach((b,i)=>{if(i===q.c)b.className='choice correct';else if(i===qcmS.sel&&!ok)b.className='choice wrong';b.disabled=true;});
+    const fb=document.getElementById('fbStrip');fb.className='fb-strip '+(ok?'ok':'bad');fb.innerHTML=`<div class="fb-t">${ok?'Bonne réponse':'Mauvaise réponse'}</div>${q.e}`;
+    updateLives();
+    const vb=document.getElementById('valBtn'),total=QCM[qcmS.ueId].questions.length;
+    vb.textContent=qcmS.idx<total-1?'Question suivante':'Voir les résultats et recommandations';vb.className='val-btn next';
+  } else {
+    const total=QCM[qcmS.ueId].questions.length;
+    if(qcmS.idx<total-1){qcmS.idx++;renderQ();window.scrollTo(0,0);}
+    else showResults();
+  }
+}
+
+/* ═══════════════════ RESULTS + RICH RECO ═══════════════════ */
+function showResults(){
+  const score=qcmS.answers.filter(Boolean).length,total=qcmS.answers.length,pct=Math.round(score/total*100);
+  document.getElementById('rSc').textContent=score;document.getElementById('rTot').textContent=total;document.getElementById('rPct').textContent=pct+'%';
+  const circ=2*Math.PI*52,arc=document.getElementById('sArc');
+  arc.style.strokeDasharray=circ;arc.style.strokeDashoffset=circ;
+  arc.style.stroke=pct>=70?'var(--green)':pct>=40?'var(--amber)':'var(--red)';
+  setTimeout(()=>arc.style.strokeDashoffset=circ*(1-pct/100),120);
+  const msgs=[{min:90,label:'Exceptionnel',sub:'Maîtrise excellente sur ce chapitre.',bg:'#FFF8DC',c:'#7A5800'},{min:70,label:'Très bien',sub:'Encore quelques révisions et c\'est dans la poche.',bg:'var(--green-l)',c:'var(--green-m)'},{min:50,label:'Continue',sub:'Tu avances. Revois les questions ratées ci-dessous.',bg:'var(--amber-l)',c:'#7A5000'},{min:0,label:'À retravailler',sub:'Utilise les recommandations ci-dessous pour cibler tes révisions.',bg:'var(--red-l)',c:'var(--red)'}];
+  const m=msgs.find(x=>pct>=x.min);
+  const rb=document.getElementById('rBadge');rb.textContent=m.label;rb.style.cssText=`background:${m.bg};color:${m.c}`;
+  document.getElementById('rSub').textContent=m.sub;
+  document.getElementById('rBubbles').innerHTML=qcmS.answers.map((ok,i)=>`<div class="ans-b ${ok?'ok':'bad'}" style="animation-delay:${i*.05}s">${i+1}</div>`).join('');
+
+  // Rich recommendations
+  buildRecos(pct);
+  go('results');
+}
+
+function buildRecos(pct){
+  const sec=document.getElementById('recoSection');
+  if(qcmS.wrongRecos.length===0){
+    sec.innerHTML=`<div class="reco-section-title">Recommandations</div><div class="reco-block"><div class="reco-type g">Score parfait</div><div class="reco-title">Excellent travail — aucune lacune détectée</div><div class="reco-body">Tu maîtrises parfaitement ce QCM. Maintiens ce niveau avec un QCM de rappel dans 2 semaines. Tu peux passer à l'UE suivante.</div></div>`;
+    return;
+  }
+
+  let html=`<div class="reco-section-title">Ce que l'IA te recommande de revoir</div>`;
+
+  // Plan de révision
+  html+=`<div class="plan-card"><div class="plan-title">Plan de révision ciblé</div>`;
+  qcmS.wrongRecos.forEach((wr,i)=>{
+    html+=`<div class="plan-item"><div class="plan-dot"></div><div class="plan-text"><strong style="color:rgba(255,255,255,.9)">Q${wr.qIdx} ·</strong> ${wr.reco.concept}</div></div>`;
+  });
+  html+=`<div class="plan-item"><div class="plan-dot" style="background:var(--amber)"></div><div class="plan-text">Refaire ce QCM dans 48h pour ancrer les corrections</div></div>`;
+  html+=`</div>`;
+
+  // Individual reco cards
+  qcmS.wrongRecos.forEach((wr,i)=>{
+    const lvl=i===0&&qcmS.wrongRecos.length>2?'r':i<Math.ceil(qcmS.wrongRecos.length/2)?'a':'a';
+    html+=`<div class="reco-block" style="animation-delay:${.05+i*.07}s">
+      <div class="reco-type ${lvl}">Question ${wr.qIdx} · ${wr.reco.concept}</div>
+      <div class="reco-title">${wr.reco.concept}</div>
+      <div class="reco-body">${wr.reco.lacune}</div>
+      <div class="reco-analogy"><strong>Analogie pour retenir :</strong> ${wr.reco.analogy}</div>
+      <button class="reco-action" onclick="openCours('${wr.reco.action}','c1')">Travailler cette leçon avec le tuteur IA</button>
+    </div>`;
+  });
+
+  // If score < 70, add global advice
+  if(pct<70){
+    html+=`<div class="reco-block" style="animation-delay:${.05+qcmS.wrongRecos.length*.07}s">
+      <div class="reco-type a">Conseil général · Score ${pct}%</div>
+      <div class="reco-title">Stratégie recommandée pour progresser</div>
+      <div class="reco-body">Avant de refaire ce QCM, travaille d'abord chaque leçon identifiée avec le tuteur IA — explique le concept à voix haute après chaque session (méthode Feynman). Attends 48h puis refais le QCM : la consolidation mémorielle nécessite un intervalle.</div>
+    </div>`;
+  }
+
+  sec.innerHTML=html;
+}
+function restartQCM(){startQCM(qcmS.ueId);}
+
+/* ═══════════════════ DIAGNOSTIC ACCORDION ═══════════════════ */
+function renderDiagAcc(){
+  // Build legend
+  document.getElementById('radarLeg').innerHTML=UES.map(u=>`<div class="rl"><div class="rl-d" style="background:${u.hex}"></div>${u.num} ${u.score}%</div>`).join('');
+  document.getElementById('diagAcc').innerHTML=DIAG_DATA.map((d,i)=>`
+    <div class="due-item" id="due${i}" style="animation-delay:${i*.05}s">
+      <button class="due-hdr" onclick="toggleDue(${i})">
+        <div class="due-stripe" style="background:${d.ue.hex}"></div>
+        <div class="due-left">
+          <div class="due-tag">${d.ue.num}</div>
+          <div class="due-name">${d.ue.name}</div>
+          <div class="due-pr"><div class="pbar" style="max-width:100px"><div class="pfill" style="background:${d.ue.hex};width:${d.ue.progress}%"></div></div><div class="ppct">${d.ue.progress}%</div></div>
+        </div>
+        <div class="lvl ${d.level}">${d.label}</div>
+        <div class="due-chev"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </button>
+      <div class="due-cours hidden" id="dc${i}">
+        ${d.ue.cours.map((c,j)=>`<button class="dc-row" onclick="openCours('${d.ue.id}','${c.id}')"><div class="dc-n">${j+1}</div><div class="dc-name">${c.name}</div><div class="c-dot ${c.status}"></div></button>`).join('')}
+        <div style="padding:8px 14px 4px"><button style="width:100%;padding:9px;border-radius:9px;background:${d.ue.hex}18;color:${d.ue.hex};font-size:12px;font-weight:700;border:1.5px solid ${d.ue.hex}40" onclick="go('batterie')">Lancer la batterie de tests</button></div>
+      </div>
+    </div>`).join('');
+}
+function toggleDue(i){const item=document.getElementById('due'+i),dc=document.getElementById('dc'+i);const open=item.classList.toggle('open');dc.classList.toggle('hidden',!open);}
+
+/* ═══════════════════ BATTERIE ═══════════════════ */
+function renderBatterie(){
+  document.getElementById('battList').innerHTML=BATT.map((s,i)=>{
+    const cls=s.done?'done':s.active?'active-s':'pending';
+    return`<button class="bs ${cls}" onclick="${s.active?`startQCM('ue1')`:s.done?`toast('Leçon testée · Score : ${s.score}%')`:  `toast('Commence les leçons dans l\'ordre')`}">
+      <div class="bs-num">${s.done?'✓':i+1}</div>
+      <div class="bs-info"><div class="bs-t">${s.name}</div><div class="bs-d">5 questions · ~3 min</div></div>
+      ${s.done?`<div class="bs-sc">${s.score}%</div>`:''}
+    </button>`;}).join('');
+  const done=BATT.filter(s=>s.done).length;
+  const btn=document.getElementById('battBtn');btn.textContent=done>0?'Continuer la batterie':'Commencer la batterie';
+  if(done>0)btn.classList.add('green');
+}
+function startBatterie(){startQCM('ue1');}
+
+/* ═══════════════════ CONCOURS BLANC ═══════════════════ */
+function renderBlanc(){
+  document.getElementById('blancBreak').innerHTML=BLANC_UES.map(u=>`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:9px">
+      <div style="width:7px;height:7px;border-radius:50%;background:${u.hex};flex-shrink:0"></div>
+      <div style="flex:1;font-size:12px;font-weight:600;color:var(--ink)">${u.num} · ${u.name}</div>
+      <div style="font-size:12px;font-weight:700;color:var(--ink2)">${u.q} Q</div>
+      <div style="width:52px;height:4px;background:var(--border);border-radius:2px;overflow:hidden"><div style="height:100%;background:${u.hex};border-radius:2px;width:${u.q/1.2}%"></div></div>
+    </div>`).join('');
+  const items=[
+    {label:'Radar de compétences animé par UE et par leçon'},
+    {label:'Score percentile simulé (classement parmi les participants)'},
+    {label:'Les 10 questions discriminantes les plus souvent ratées'},
+    {label:'Plan de révision sur 4 semaines généré par l\'IA'},
+    {label:'Comparaison avec ton résultat au concours blanc précédent'},
+    {label:'Rapport PDF téléchargeable à partager avec ton préparateur'},
+  ];
+  document.getElementById('blancResults').innerHTML=items.map(it=>`
+    <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">
+      <div style="width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:5px"></div>
+      <div style="font-size:12px;font-weight:600;color:var(--ink2);line-height:1.45">${it.label}</div>
+    </div>`).join('');
+}
+
+/* ═══════════════════ INIT ═══════════════════ */
+// Radar animation keyframe
+const sty=document.createElement('style');
+sty.textContent='@keyframes rIn{from{opacity:0;transform-origin:center;transform:scale(.6)}to{opacity:1;transform:scale(1)}}';
+document.head.appendChild(sty);
+
+renderUEs(); renderQCMGrid();
+
+// Set initial nav active state (home is default)
+document.getElementById('nav-home')?.classList.add('active');
+
+// Home radar on load
+requestAnimationFrame(()=>{drawHomeGauss();buildCountdown('cdRow');});
+</script>
+<!-- ═══ GLOBAL NAV (single instance, truly fixed) ═══ -->
+<nav class="nav" id="globalNav">
+  <button class="nav-item" id="nav-home" onclick="go('home')">
+    <div class="nav-iw"><svg class="nav-svg" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+    <span class="nav-lbl">Accueil</span>
+  </button>
+  <button class="nav-item" id="nav-ues" onclick="go('ues')">
+    <div class="nav-iw"><svg class="nav-svg" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg></div>
+    <span class="nav-lbl">Tuteur</span>
+  </button>
+  <button class="nav-item" id="nav-qcmUes" onclick="go('qcmUes')">
+    <div class="nav-iw"><svg class="nav-svg" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+    <span class="nav-lbl">QCM</span>
+  </button>
+  <button class="nav-item" id="nav-diag" onclick="go('diag')">
+    <div class="nav-iw"><svg class="nav-svg" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+    <span class="nav-lbl">Bilan</span>
+  </button>
+</nav>
+
+</body>
+</html>
