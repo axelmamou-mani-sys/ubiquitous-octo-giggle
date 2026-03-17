@@ -1064,14 +1064,65 @@ function renderChat(){
   const AV=`<div class="tutor-av"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg></div>`;
   document.getElementById('chatArea').innerHTML=chat.map(m=>m.from==='ai'?`<div class="msg-row">${AV}<div class="bbl-ai">${m.text}</div></div>`:`<div class="msg-row user"><div class="bbl-user">${m.text}</div></div>`).join('');
 }
+/* ═══════════════════ CLAUDE API ═══════════════════ */
+async function callClaude(system, messages){
+  try {
+    const r = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({system, messages})
+    });
+    const d = await r.json();
+    if(d.error) throw new Error(d.error);
+    return d.text;
+  } catch(e) {
+    return null; // fallback to static on error
+  }
+}
+
+function getTutorSystem(){
+  return `Tu es Hippocrate.AI, un tuteur pédagogique expert pour les étudiants en PASS (Parcours Accès Santé Spécifique) en France qui préparent le concours de fin d'année.
+
+Tu aides l'étudiant à maîtriser le chapitre : "${cur.cours?.name}" (${cur.ue?.num} — ${cur.ue?.name}).
+
+Tes règles :
+- Réponds toujours en français, avec un ton bienveillant mais exigeant
+- Pose des questions de Socrate : guide vers la réponse sans la donner directement
+- Quand l'étudiant donne une réponse correcte, félicite-le brièvement et approfondis
+- Quand il se trompe, identifie précisément l'erreur conceptuelle et donne une analogie mémorable
+- Utilise des exemples cliniques concrets pour ancrer les notions abstraites
+- Tes réponses font entre 2 et 5 phrases maximum — concis et percutant
+- Adapte ton niveau à la réponse de l'étudiant`;
+}
+
 function sendMsg(){
   const inp=document.getElementById('chatInput'),txt=inp.value.trim();if(!txt)return;
-  addMsg('user',txt);inp.value='';
+  inp.value='';
+
+  // Build history BEFORE adding new user message (chat doesn't include it yet)
+  const apiMessages = chat.map(m=>({
+    role: m.from==='user' ? 'user' : 'assistant',
+    content: m.text
+  }));
+  // Add the new user message
+  apiMessages.push({role:'user', content:txt});
+
+  // Now show it in UI
+  addMsg('user',txt);
+
   const a=document.getElementById('chatArea');
   const tid=document.createElement('div');tid.className='msg-row';tid.id='typing';
   tid.innerHTML=`<div class="tutor-av"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 014-4h4a4 4 0 014 4v2"/></svg></div><div class="typing"><div class="td"></div><div class="td"></div><div class="td"></div></div>`;
   a.appendChild(tid);a.scrollTop=a.scrollHeight;
-  setTimeout(()=>{const el=document.getElementById('typing');if(el)el.remove();addMsg('ai',GENERIC_REPLIES[Math.floor(Math.random()*GENERIC_REPLIES.length)]);},1400+Math.random()*500);
+
+  callClaude(getTutorSystem(), apiMessages).then(reply=>{
+    const el=document.getElementById('typing');if(el)el.remove();
+    if(reply){
+      addMsg('ai', reply);
+    } else {
+      addMsg('ai', GENERIC_REPLIES[Math.floor(Math.random()*GENERIC_REPLIES.length)]);
+    }
+  });
 }
 
 /* ═══════════════════ QCM GRID ═══════════════════ */
@@ -1141,49 +1192,86 @@ function showResults(){
   document.getElementById('rBubbles').innerHTML=qcmS.answers.map((ok,i)=>`<div class="ans-b ${ok?'ok':'bad'}" style="animation-delay:${i*.05}s">${i+1}</div>`).join('');
 
   // Rich recommendations
-  buildRecos(pct);
+  buildRecos(pct); // async, runs in background while page shows
   go('results');
 }
 
-function buildRecos(pct){
+async function buildRecos(pct){
   const sec=document.getElementById('recoSection');
+
   if(qcmS.wrongRecos.length===0){
     sec.innerHTML=`<div class="reco-section-title">Recommandations</div><div class="reco-block"><div class="reco-type g">Score parfait</div><div class="reco-title">Excellent travail — aucune lacune détectée</div><div class="reco-body">Tu maîtrises parfaitement ce QCM. Maintiens ce niveau avec un QCM de rappel dans 2 semaines. Tu peux passer à l'UE suivante.</div></div>`;
     return;
   }
 
-  let html=`<div class="reco-section-title">Ce que l'IA te recommande de revoir</div>`;
+  // Show static skeleton immediately while Claude generates
+  const ueTitle = QCM[qcmS.ueId]?.title || 'ce chapitre';
+  const wrongList = qcmS.wrongRecos.map((wr,i)=>`Q${wr.qIdx} : ${wr.q} (concept : ${wr.reco.concept})`).join('\n');
 
-  // Plan de révision
-  html+=`<div class="plan-card"><div class="plan-title">Plan de révision ciblé</div>`;
-  qcmS.wrongRecos.forEach((wr,i)=>{
+  let html = `<div class="reco-section-title">Ce que l'IA te recommande de revoir</div>`;
+  html += `<div class="plan-card"><div class="plan-title">Plan de révision ciblé</div>`;
+  qcmS.wrongRecos.forEach(wr=>{
     html+=`<div class="plan-item"><div class="plan-dot"></div><div class="plan-text"><strong style="color:rgba(255,255,255,.9)">Q${wr.qIdx} ·</strong> ${wr.reco.concept}</div></div>`;
   });
-  html+=`<div class="plan-item"><div class="plan-dot" style="background:var(--amber)"></div><div class="plan-text">Refaire ce QCM dans 48h pour ancrer les corrections</div></div>`;
-  html+=`</div>`;
+  html+=`<div class="plan-item"><div class="plan-dot" style="background:var(--amber)"></div><div class="plan-text">Refaire ce QCM dans 48h pour ancrer les corrections</div></div></div>`;
 
-  // Individual reco cards
+  // Placeholder cards with loading state
   qcmS.wrongRecos.forEach((wr,i)=>{
-    const lvl=i===0&&qcmS.wrongRecos.length>2?'r':i<Math.ceil(qcmS.wrongRecos.length/2)?'a':'a';
-    html+=`<div class="reco-block" style="animation-delay:${.05+i*.07}s">
-      <div class="reco-type ${lvl}">Question ${wr.qIdx} · ${wr.reco.concept}</div>
+    html+=`<div class="reco-block" id="reco-ai-${i}" style="animation-delay:${.05+i*.07}s">
+      <div class="reco-type a">Question ${wr.qIdx} · ${wr.reco.concept}</div>
       <div class="reco-title">${wr.reco.concept}</div>
-      <div class="reco-body">${wr.reco.lacune}</div>
-      <div class="reco-analogy"><strong>Analogie pour retenir :</strong> ${wr.reco.analogy}</div>
+      <div class="reco-body" id="reco-body-${i}"><span style="color:var(--ink3);font-style:italic">Analyse en cours…</span></div>
       <button class="reco-action" onclick="openCours('${wr.reco.action}','c1')">Travailler cette leçon avec le tuteur IA</button>
     </div>`;
   });
+  sec.innerHTML = html;
 
-  // If score < 70, add global advice
-  if(pct<70){
-    html+=`<div class="reco-block" style="animation-delay:${.05+qcmS.wrongRecos.length*.07}s">
-      <div class="reco-type a">Conseil général · Score ${pct}%</div>
-      <div class="reco-title">Stratégie recommandée pour progresser</div>
-      <div class="reco-body">Avant de refaire ce QCM, travaille d'abord chaque leçon identifiée avec le tuteur IA — explique le concept à voix haute après chaque session (méthode Feynman). Attends 48h puis refais le QCM : la consolidation mémorielle nécessite un intervalle.</div>
-    </div>`;
+  // Now call Claude for each wrong answer
+  const system = `Tu es Hippocrate.AI, expert pédagogique PASS. Pour chaque erreur d'un étudiant à un QCM, tu génères une explication personnalisée en 3 parties :
+1. L'ERREUR CONCEPTUELLE : identifie précisément ce qui a été confondu (1 phrase directe)
+2. L'EXPLICATION : réexplique le concept correctement avec un exemple clinique concret (2-3 phrases)
+3. L'ANALOGIE MÉMORABLE : une analogie du quotidien pour ancrer la notion définitivement (1 phrase, commence par "Retiens : ")
+Réponds uniquement avec ces 3 parties, sans titres, en français, ton direct et encourageant.`;
+
+  for(let i=0; i<qcmS.wrongRecos.length; i++){
+    const wr = qcmS.wrongRecos[i];
+    const userMsg = `L'étudiant a raté cette question de ${ueTitle} :
+Question : "${wr.q}"
+Concept testé : ${wr.reco.concept}
+Sa lacune identifiée : ${wr.reco.lacune}
+Génère l'explication pédagogique personnalisée.`;
+
+    const reply = await callClaude(system, [{role:'user', content:userMsg}]);
+    const bodyEl = document.getElementById(`reco-body-${i}`);
+    if(bodyEl){
+      if(reply){
+        // Format the 3 parts nicely
+        const lines = reply.split('\n').filter(l=>l.trim());
+        bodyEl.innerHTML = lines.map((l,idx)=>{
+          if(l.startsWith('Retiens :') || l.includes('Retiens :'))
+            return `<div class="reco-analogy" style="margin-top:10px"><strong>Retiens :</strong> ${l.replace(/^Retiens\s*:\s*/,'')}</div>`;
+          return `<p style="margin-bottom:6px">${l}</p>`;
+        }).join('');
+      } else {
+        // Fallback to static
+        bodyEl.innerHTML = `<p style="margin-bottom:6px">${wr.reco.lacune}</p><div class="reco-analogy"><strong>Analogie :</strong> ${wr.reco.analogy}</div>`;
+      }
+    }
   }
 
-  sec.innerHTML=html;
+  // Global advice from Claude if score < 70
+  if(pct < 70){
+    const adviceEl = document.createElement('div');
+    adviceEl.className = 'reco-block';
+    adviceEl.innerHTML = `<div class="reco-type a">Conseil général · Score ${pct}%</div><div class="reco-title">Stratégie recommandée</div><div class="reco-body" id="reco-global"><span style="color:var(--ink3);font-style:italic">Génération du plan personnalisé…</span></div>`;
+    sec.appendChild(adviceEl);
+
+    const globalSystem = `Tu es Hippocrate.AI. Un étudiant PASS vient de faire ${pct}% à un QCM sur ${ueTitle}. Il a raté : ${wrongList}. Donne-lui en 3-4 phrases un conseil de méthode personnalisé et motivant pour progresser efficacement avant de refaire ce QCM. Sois direct, concret, encourageant.`;
+    const globalReply = await callClaude(globalSystem, [{role:'user', content:'Donne-moi ton conseil de méthode personnalisé.'}]);
+    const globalEl = document.getElementById('reco-global');
+    if(globalEl && globalReply) globalEl.textContent = globalReply;
+    else if(globalEl) globalEl.textContent = 'Travaille chaque leçon avec le tuteur IA avant de refaire ce QCM. La méthode Feynman (réexpliquer le concept à voix haute) est la plus efficace pour ancrer les notions complexes.';
+  }
 }
 function restartQCM(){startQCM(qcmS.ueId);}
 
