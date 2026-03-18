@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hippocrate.AI – Espace Directeur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --white:#FFFFFF;--off:#F7F8FC;--border:#EAECF4;--border2:#D8DBE8;
+  --ink:#0F1021;--ink2:#4A4E6A;--ink3:#9096B8;
+  --green:#00C48C;--green-l:#E6FBF4;--green-m:#00A677;
+  --red:#FF4757;--red-l:#FFF0F1;
+  --amber:#FFB830;--amber-l:#FFF8E6;
+  --blue:#3B6FFF;--blue-l:#EEF2FF;
+  --r:14px;--r-sm:10px;--r-lg:20px;
+  --sh:0 2px 16px rgba(15,16,33,.07);--sh-lg:0 8px 40px rgba(15,16,33,.12);
+  --sidebar:244px;--f:'Plus Jakarta Sans',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--f);background:var(--off);color:var(--ink);overflow:hidden}
+button{font-family:var(--f);cursor:pointer;border:none;background:none}
+
+.shell{display:flex;height:100vh;overflow:hidden}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sidebar);background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sb-logo{padding:22px 20px 18px;border-bottom:1px solid var(--border)}
+.sb-logo-main{font-size:17px;font-weight:800;color:var(--ink)}
+.sb-logo-main span{color:var(--green)}
+.sb-logo-sub{font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.1em;margin-top:3px}
+.sb-prepa{margin:12px;background:linear-gradient(135deg,#0F1021,#1c2a4a);border-radius:var(--r);padding:12px 14px}
+.sb-prepa-name{font-size:13px;font-weight:800;color:white}
+.sb-prepa-addr{font-size:10px;font-weight:600;color:rgba(255,255,255,.4);margin-top:1px}
+.sb-prepa-sub{font-size:10px;font-weight:600;color:rgba(255,255,255,.35);margin-top:4px;padding-top:6px;border-top:1px solid rgba(255,255,255,.1)}
+.sb-nav{flex:1;padding:6px 8px}
+.sb-section{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--ink3);padding:14px 12px 5px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer;transition:all .15s;border:none;width:100%;text-align:left}
+.sb-item:hover{background:var(--off);color:var(--ink)}
+.sb-item.active{background:var(--green-l);color:var(--green-m)}
+.sb-item svg{width:15px;height:15px;flex-shrink:0;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.sb-badge{margin-left:auto;background:var(--red-l);color:var(--red);font-size:10px;font-weight:800;padding:1px 7px;border-radius:10px}
+.sb-badge.g{background:var(--green-l);color:var(--green-m)}
+.sb-footer{padding:12px;border-top:1px solid var(--border)}
+.sb-avatar{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--off);border-radius:var(--r-sm)}
+.av-circle{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--blue));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:white;flex-shrink:0}
+.av-name{font-size:12px;font-weight:700;color:var(--ink)}
+.av-role{font-size:10px;font-weight:500;color:var(--ink3)}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{background:var(--white);border-bottom:1px solid var(--border);padding:0 28px;height:58px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.tb-title{font-size:15px;font-weight:800;color:var(--ink)}
+.tb-right{display:flex;align-items:center;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700}
+.chip.outline{border:1.5px solid var(--border);color:var(--ink3)}
+.chip.green{background:var(--green-l);color:var(--green-m);border:1.5px solid #C8F4E8}
+.chip.amber{background:var(--amber-l);color:#7A5000;border:1.5px solid #FFD580}
+.chip svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round}
+.content{flex:1;overflow-y:auto;padding:22px 28px}
+
+/* ── PAGES ── */
+.page{display:none;animation:pgIn .2s cubic-bezier(.22,1,.36,1) both}
+.page.active{display:block}
+@keyframes pgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ── KPI ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.kpi{background:var(--white);border-radius:var(--r);padding:16px 18px;box-shadow:var(--sh);border-top:3px solid transparent}
+.kpi.g{border-top-color:var(--green)}.kpi.b{border-top-color:var(--blue)}.kpi.r{border-top-color:var(--red)}.kpi.a{border-top-color:var(--amber)}
+.kpi-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);margin-bottom:7px}
+.kpi-val{font-size:28px;font-weight:800;color:var(--ink);line-height:1}
+.kpi-val span{font-size:13px;font-weight:600;color:var(--ink3)}
+.kpi-delta{margin-top:5px;font-size:11px;font-weight:600}
+.kpi-delta.up{color:var(--green)}.kpi-delta.down{color:var(--red)}.kpi-delta.neutral{color:var(--ink3)}
+
+/* ── CARD ── */
+.card{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);margin-bottom:14px}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 0}
+.card-title{font-size:13px;font-weight:800;color:var(--ink)}
+.card-link{font-size:11px;font-weight:700;color:var(--green-m);cursor:pointer}
+.card-body{padding:14px 18px 18px}
+
+/* ── GRID ── */
+.grid-2{display:grid;grid-template-columns:1.6fr 1fr;gap:14px;margin-bottom:14px}
+
+/* ── TABLE ── */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--ink3);text-align:left;padding:0 0 9px;border-bottom:1px solid var(--border)}
+.tbl td{padding:10px 0;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.s-name{font-weight:700;color:var(--ink)}
+.s-sub{font-size:10px;font-weight:500;color:var(--ink3);margin-top:1px}
+.rank-num{font-size:16px;font-weight:800;color:var(--ink3);width:28px}
+.rank-num.top{color:var(--green)}
+
+/* score bar */
+.bar-wrap{display:flex;align-items:center;gap:8px}
+.sbar{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden;max-width:80px}
+.sbar-fill{height:100%;border-radius:2px}
+.sbar-val{font-size:12px;font-weight:700;width:30px;text-align:right;color:var(--ink)}
+
+/* badges — palette réduite à 3 états */
+.badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px}
+.badge.hot{background:var(--amber-l);color:#7A5000}
+.badge.ok{background:var(--green-l);color:var(--green-m)}
+.badge.cold{background:var(--red-l);color:var(--red)}
+.badge.neutral{background:var(--off);color:var(--ink3);border:1px solid var(--border)}
+
+/* percentile — 2 états seulement : vert ou rouge */
+.pct{font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px}
+.pct.good{background:var(--green-l);color:var(--green-m)}
+.pct.mid{background:var(--blue-l);color:var(--blue)}
+.pct.low{background:var(--amber-l);color:#7A5000}
+.pct.bad{background:var(--red-l);color:var(--red)}
+
+/* ── UE BARS ── */
+.ue-row{margin-bottom:12px}
+.ue-row:last-child{margin-bottom:0}
+.ue-row-top{display:flex;justify-content:space-between;margin-bottom:5px}
+.ue-lbl{font-size:12px;font-weight:600;color:var(--ink2)}
+.ue-pct{font-size:12px;font-weight:700;color:var(--ink)}
+.ue-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.ue-fill{height:100%;border-radius:3px;transition:width .7s cubic-bezier(.22,1,.36,1)}
+
+/* ── ALERTS ── */
+.alert-item{display:flex;align-items:flex-start;gap:11px;padding:12px 14px;border-radius:var(--r-sm);border:1.5px solid var(--border);margin-bottom:8px;background:var(--off)}
+.alert-item:last-child{margin-bottom:0}
+.alert-item.crit{border-color:#FFD0D4;background:var(--red-l)}
+.alert-item.warn{border-color:#FFD580;background:var(--amber-l)}
+.alert-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.alert-dot.r{background:var(--red)}.alert-dot.a{background:var(--amber)}
+.alert-title{font-size:12px;font-weight:700;color:var(--ink);line-height:1.4}
+.alert-sub{font-size:11px;font-weight:500;color:var(--ink2);margin-top:2px;line-height:1.4}
+.alert-btn{margin-left:auto;font-size:11px;font-weight:700;color:var(--ink);background:white;border-radius:8px;padding:4px 10px;flex-shrink:0;border:1px solid var(--border)}
+
+/* ── HEATMAP ── */
+.hmap-lbl-row{display:flex;gap:3px;margin-bottom:4px}
+.hmap-lbl{flex:1;text-align:center;font-size:9px;font-weight:700;color:var(--ink3)}
+.hmap-row{display:flex;gap:3px}
+.hmap-cell{flex:1;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--ink2)}
+
+/* ── STUDENT CARDS ── */
+.student-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.s-card{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);padding:13px;border:1.5px solid transparent;cursor:pointer;transition:all .15s;text-align:left;border:none;width:100%;display:block}
+.s-card:hover{box-shadow:var(--sh-lg);border:1.5px solid var(--green)}
+.s-card.at-risk{border:1.5px solid #FFD0D4 !important}
+.s-card-top{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.s-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:white;flex-shrink:0}
+.s-card-name{font-size:13px;font-weight:700;color:var(--ink)}
+.s-card-rank{font-size:10px;font-weight:600;color:var(--ink3)}
+.s-card-score{font-size:24px;font-weight:800;color:var(--ink);margin-bottom:2px;line-height:1}
+.s-card-score span{font-size:11px;font-weight:500;color:var(--ink3)}
+.s-mini-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:8px}
+.s-card-bottom{display:flex;align-items:center;justify-content:space-between}
+
+/* ── UE TILES ── */
+.ue-tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px}
+.ue-tile{border-radius:var(--r);padding:13px;position:relative;overflow:hidden;cursor:pointer;transition:all .15s;border:2px solid transparent;text-align:left;width:100%}
+.ue-tile:hover{transform:translateY(-2px);box-shadow:var(--sh-lg)}
+.ue-tile.sel{border-color:rgba(255,255,255,.5)}
+.ue-tile::before{content:'';position:absolute;top:-10px;right:-10px;width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.12)}
+.ue-tile-num{font-size:9px;font-weight:800;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px}
+.ue-tile-name{font-size:10px;font-weight:700;color:white;line-height:1.3;margin-bottom:7px}
+.ue-tile-score{font-size:22px;font-weight:800;color:white;line-height:1}
+.ue-tile-sub{font-size:9px;font-weight:600;color:rgba(255,255,255,.5);margin-top:2px}
+
+/* ── CONCOURS COUNTDOWN ── */
+.cd-hero{background:linear-gradient(140deg,#0F1021,#1c2a4a);border-radius:var(--r-lg);padding:20px 22px;margin-bottom:14px;position:relative;overflow:hidden}
+.cd-hero::before{content:'';position:absolute;top:-30px;right:-30px;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,rgba(0,196,140,.18) 0%,transparent 70%)}
+.cd-label{font-size:10px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px}
+.cd-title{font-size:17px;font-weight:800;color:white;margin-bottom:3px}
+.cd-sub{font-size:11px;font-weight:600;color:rgba(255,255,255,.45)}
+.cd-chips{display:flex;gap:8px;margin-top:14px}
+.cd-chip{background:rgba(255,255,255,.08);border-radius:10px;padding:8px 14px;text-align:center}
+.cd-chip-val{font-size:22px;font-weight:800;color:white;line-height:1}
+.cd-chip-lbl{font-size:9px;font-weight:700;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.07em;margin-top:2px}
+
+/* ── BENCHMARK (anonymisé) ── */
+.bk-scale{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);padding:22px 20px;margin-bottom:14px}
+.bk-track{position:relative;height:10px;background:linear-gradient(90deg,var(--red-l),var(--amber-l),var(--green-l));border-radius:5px;margin:20px 0 8px}
+.bk-marker{position:absolute;top:-5px;width:20px;height:20px;border-radius:50%;background:var(--green);border:3px solid white;box-shadow:0 2px 8px rgba(0,196,140,.4);transform:translateX(-50%)}
+.bk-marker-lbl{position:absolute;top:-32px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:800;color:var(--green-m);white-space:nowrap;background:var(--green-l);padding:2px 8px;border-radius:20px}
+.bk-extremes{display:flex;justify-content:space-between;font-size:9px;font-weight:700;color:var(--ink3)}
+.bk-progress-rows{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.bk-p-row{display:flex;align-items:center;gap:12px}
+.bk-p-lbl{font-size:12px;font-weight:600;color:var(--ink2);width:160px;flex-shrink:0}
+.bk-p-bar{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.bk-p-fill{height:100%;border-radius:3px}
+.bk-p-val{font-size:12px;font-weight:700;color:var(--ink);width:32px;text-align:right}
+
+/* ── CB PROGRESS ── */
+.cb-progress-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.cb-progress-row:last-child{border-bottom:none}
+.cb-p-label{font-size:12px;font-weight:600;color:var(--ink2);flex:1}
+.cb-p-score{font-size:18px;font-weight:800;color:var(--ink)}
+.cb-p-delta{font-size:10px;font-weight:600;color:var(--green)}
+
+/* ── MINI DIST ── */
+.mini-dist{display:flex;align-items:flex-end;gap:3px;height:40px;margin-top:12px}
+.md-bar{flex:1;border-radius:2px 2px 0 0}
+
+/* misc */
+.info-box{border-radius:var(--r-sm);padding:11px 13px;font-size:11px;font-weight:600;line-height:1.5}
+.info-box.green{background:var(--green-l);color:var(--green-m)}
+.info-box.red{background:var(--red-l);color:var(--red)}
+.info-box.blue{background:var(--blue-l);color:var(--blue)}
+.info-box.amber{background:var(--amber-l);color:#7A5000}
+.stat-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat-box{background:var(--off);border-radius:10px;padding:11px}
+.stat-box-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3)}
+.stat-box-val{font-size:22px;font-weight:800;color:var(--ink);margin-top:2px;line-height:1}
+.stat-box-sub{font-size:10px;font-weight:600;margin-top:3px}
+.divider{height:1px;background:var(--border);margin:12px 0}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ══ SIDEBAR ══ -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-main">Hippocrate<span>.AI</span></div>
+    <div class="sb-logo-sub">Espace Directeur</div>
+  </div>
+
+  <div class="sb-prepa">
+    <div class="sb-prepa-name">Médisup Sciences</div>
+    <div class="sb-prepa-addr">16 rue de la Cerisaie · Paris 4e</div>
+    <div class="sb-prepa-sub">Promo PASS 2025–2026 · 52 étudiants</div>
+  </div>
+
+  <nav class="sb-nav">
+    <div class="sb-section">Accueil</div>
+    <button class="sb-item active" onclick="showPage('dashboard')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Tableau de bord
+    </button>
+
+    <div class="sb-section">Mes étudiants</div>
+    <button class="sb-item" onclick="showPage('etudiants')">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      Tous les étudiants
+    </button>
+    <button class="sb-item" onclick="showPage('alertes')">
+      <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      Alertes décrochage
+      <span class="sb-badge">3</span>
+    </button>
+
+    <div class="sb-section">Performance</div>
+    <button class="sb-item" onclick="showPage('ues')">
+      <svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+      Suivi par UE
+    </button>
+    <button class="sb-item" onclick="showPage('concours')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Concours blancs
+    </button>
+    <button class="sb-item" onclick="showPage('benchmark')">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Positionnement national
+      <span class="sb-badge g">Top 28%</span>
+    </button>
+  </nav>
+
+  <div class="sb-footer">
+    <div class="sb-avatar">
+      <div class="av-circle">FD</div>
+      <div>
+        <div class="av-name">Dr. F. Deschamps</div>
+        <div class="av-role">Directeur pédagogique</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ══ MAIN ══ -->
+<div class="main">
+  <div class="topbar">
+    <div class="tb-title" id="tb-title">Tableau de bord — Promo PASS 2025–2026</div>
+    <div class="tb-right">
+      <div class="chip amber">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Concours blanc · 28 mars
+      </div>
+      <div class="chip green">
+        <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        Concours dans 68 jours
+      </div>
+      <div class="chip outline">18 mars 2026</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ════════════════════════
+         TABLEAU DE BORD
+    ════════════════════════ -->
+    <div class="page active" id="page-dashboard">
+      <div class="kpi-grid">
+        <div class="kpi g">
+          <div class="kpi-label">Étudiants actifs</div>
+          <div class="kpi-val">48<span> / 52</span></div>
+          <div class="kpi-delta up">↑ +3 cette semaine</div>
+        </div>
+        <div class="kpi b">
+          <div class="kpi-label">Score moyen promo</div>
+          <div class="kpi-val">64<span>%</span></div>
+          <div class="kpi-delta up">↑ +2,3 pts ce mois</div>
+        </div>
+        <div class="kpi a">
+          <div class="kpi-label">Positionnement national</div>
+          <div class="kpi-val">Top<span> 28%</span></div>
+          <div class="kpi-delta neutral">parmi 1 247 étudiants</div>
+        </div>
+        <div class="kpi r">
+          <div class="kpi-label">Risque décrochage</div>
+          <div class="kpi-val">3<span> élèves</span></div>
+          <div class="kpi-delta down">↑ +1 cette semaine</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- CLASSEMENT -->
+        <div class="card">
+          <div class="card-hdr">
+            <div class="card-title">Classement de la promo</div>
+            <div class="card-link" onclick="showPage('etudiants')">Voir tous →</div>
+          </div>
+          <div class="card-body" style="padding-top:12px">
+            <table class="tbl">
+              <thead><tr>
+                <th style="width:28px">#</th><th>Étudiant</th><th>Score moy.</th><th>Activité</th><th>Position nat.</th>
+              </tr></thead>
+              <tbody>
+                <tr>
+                  <td class="rank-num top">1</td>
+                  <td><div class="s-name">Léa Mercier</div><div class="s-sub">Lycée Henri IV · Paris</div></td>
+                  <td><div class="bar-wrap"><div class="sbar"><div class="sbar-fill" style="width:82%;background:var(--green)"></div></div><span class="sbar-val">82%</span></div></td>
+                  <td><span class="badge hot">🔥 18j</span></td>
+                  <td><span class="pct good">Top 8%</span></td>
+                </tr>
+                <tr>
+                  <td class="rank-num top">2</td>
+                  <td><div class="s-name">Antoine Rousseau</div><div class="s-sub">Lycée Louis-le-Grand</div></td>
+                  <td><div class="bar-wrap"><div class="sbar"><div class="sbar-fill" style="width:78%;background:var(--green)"></div></div><span class="sbar-val">78%</span></div></td>
+                  <td><span class="badge hot">🔥 12j</span></td>
+                  <td><span class="pct good">Top 14%</span></td>
+                </tr>
+                <tr>
+                  <td class="rank-num top">3</td>
+                  <td><div class="s-name">Sofia Benzara</div><div class="s-sub">Lycée Carnot · Paris</div></td>
+                  <td><div class="bar-wrap"><div class="sbar"><div class="sbar-fill" style="width:74%;background:var(--blue)"></div></div><span class="sbar-val">74%</span></div></td>
+                  <td><span class="badge ok">✓ 6j</span></td>
+                  <td><span class="pct good">Top 22%</span></td>
+                </tr>
+                <tr>
+                  <td class="rank-num">4</td>
+                  <td><div class="s-name">Hugo Tran</div><div class="s-sub">Lycée Janson-de-Sailly</div></td>
+                  <td><div class="bar-wrap"><div class="sbar"><div class="sbar-fill" style="width:68%;background:var(--blue)"></div></div><span class="sbar-val">68%</span></div></td>
+                  <td><span class="badge ok">✓ 4j</span></td>
+                  <td><span class="pct mid">Top 31%</span></td>
+                </tr>
+                <tr>
+                  <td class="rank-num" style="color:var(--border2)">…</td>
+                  <td><div class="s-name" style="color:var(--ink3)">43 autres étudiants</div><div class="s-sub">Score moyen : 61%</div></td>
+                  <td colspan="3"></td>
+                </tr>
+                <tr>
+                  <td class="rank-num" style="color:var(--red)">50</td>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:6px">
+                      <div style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0"></div>
+                      <div><div class="s-name">Karim Diouf</div><div class="s-sub">Inactif depuis 9 jours</div></div>
+                    </div>
+                  </td>
+                  <td><div class="bar-wrap"><div class="sbar"><div class="sbar-fill" style="width:41%;background:var(--red)"></div></div><span class="sbar-val" style="color:var(--red)">41%</span></div></td>
+                  <td><span class="badge cold">✗ 0j</span></td>
+                  <td><span class="pct bad">Bot. 20%</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- COLONNE DROITE -->
+        <div>
+          <div class="card">
+            <div class="card-hdr"><div class="card-title">Score moyen par UE</div><div class="card-link" onclick="showPage('ues')">Détail →</div></div>
+            <div class="card-body">
+              <div class="ue-row"><div class="ue-row-top"><span class="ue-lbl">UE1 – Chimie</span><span class="ue-pct">71%</span></div><div class="ue-bar"><div class="ue-fill" style="width:71%;background:var(--green)"></div></div></div>
+              <div class="ue-row"><div class="ue-row-top"><span class="ue-lbl">UE2 – Biologie cellulaire</span><span class="ue-pct">68%</span></div><div class="ue-bar"><div class="ue-fill" style="width:68%;background:var(--blue)"></div></div></div>
+              <div class="ue-row"><div class="ue-row-top"><span class="ue-lbl">UE3 – Biophysique</span><span class="ue-pct" style="color:var(--red)">52%</span></div><div class="ue-bar"><div class="ue-fill" style="width:52%;background:var(--red)"></div></div></div>
+              <div class="ue-row"><div class="ue-row-top"><span class="ue-lbl">UE4 – Évaluation médicale</span><span class="ue-pct" style="color:var(--green-m)">74%</span></div><div class="ue-bar"><div class="ue-fill" style="width:74%;background:var(--green)"></div></div></div>
+              <div class="ue-row"><div class="ue-row-top"><span class="ue-lbl">UE5 – Anatomie</span><span class="ue-pct" style="color:var(--amber)">58%</span></div><div class="ue-bar"><div class="ue-fill" style="width:58%;background:var(--amber)"></div></div></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-hdr"><div class="card-title">Engagement — 7 derniers jours</div></div>
+            <div class="card-body">
+              <div class="hmap-lbl-row">
+                <div class="hmap-lbl">LUN</div><div class="hmap-lbl">MAR</div><div class="hmap-lbl">MER</div>
+                <div class="hmap-lbl">JEU</div><div class="hmap-lbl">VEN</div><div class="hmap-lbl">SAM</div><div class="hmap-lbl">DIM</div>
+              </div>
+              <div class="hmap-row">
+                <div class="hmap-cell" style="background:rgba(0,196,140,.45);color:#005c42">45</div>
+                <div class="hmap-cell" style="background:rgba(0,196,140,.6);color:white">47</div>
+                <div class="hmap-cell" style="background:rgba(0,196,140,.28)">40</div>
+                <div class="hmap-cell" style="background:rgba(0,196,140,.75);color:white">50</div>
+                <div class="hmap-cell" style="background:rgba(0,196,140,.55);color:white">46</div>
+                <div class="hmap-cell" style="background:rgba(0,196,140,.15)">33</div>
+                <div class="hmap-cell" style="background:rgba(0,196,140,.08);color:var(--ink3)">21</div>
+              </div>
+              <div style="font-size:9px;font-weight:600;color:var(--ink3);margin-top:5px">Étudiants actifs par jour · sur 52</div>
+              <div class="divider"></div>
+              <div class="stat-2">
+                <div class="stat-box">
+                  <div class="stat-box-lbl">Sessions cette semaine</div>
+                  <div class="stat-box-val">312</div>
+                  <div class="stat-box-sub" style="color:var(--green)">↑ +22 vs sem. passée</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-box-lbl">QCM complétés</div>
+                  <div class="stat-box-val">2 080</div>
+                  <div class="stat-box-sub" style="color:var(--ink3)">Moy. 43 / étudiant</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ALERTES RÉSUMÉ -->
+      <div class="card">
+        <div class="card-hdr"><div class="card-title">⚠ Alertes décrochage — 3 élèves</div><div class="card-link" onclick="showPage('alertes')">Voir les fiches →</div></div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+            <div class="alert-item crit" style="margin-bottom:0">
+              <div class="alert-dot r"></div>
+              <div><div class="alert-title">Karim Diouf</div><div class="alert-sub">9 jours inactif · UE3 : 38%</div></div>
+            </div>
+            <div class="alert-item crit" style="margin-bottom:0">
+              <div class="alert-dot r"></div>
+              <div><div class="alert-title">Marie Lefebvre</div><div class="alert-sub">3 QCM consécutifs &lt; 40%</div></div>
+            </div>
+            <div class="alert-item warn" style="margin-bottom:0">
+              <div class="alert-dot a"></div>
+              <div><div class="alert-title">Théo Vallet</div><div class="alert-sub">Streak rompu après 21 jours</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════
+         TOUS LES ÉTUDIANTS
+    ════════════════════════ -->
+    <div class="page" id="page-etudiants">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="font-size:12px;font-weight:600;color:var(--ink3)">52 étudiants · Médisup Sciences Paris 4e · Promo 2025–2026</div>
+        <div style="display:flex;gap:6px">
+          <span class="badge ok" style="padding:5px 12px">Actifs : 48</span>
+          <span class="badge cold" style="padding:5px 12px">À risque : 3</span>
+          <span class="badge neutral" style="padding:5px 12px">Inactifs : 4</span>
+        </div>
+      </div>
+      <div class="student-grid" id="studentGrid"></div>
+    </div>
+
+    <!-- ════════════════════════
+         ALERTES DÉCROCHAGE
+    ════════════════════════ -->
+    <div class="page" id="page-alertes">
+      <div class="info-box blue" style="margin-bottom:16px">
+        Hippocrate.AI surveille en continu l'activité, les scores et les tendances de chaque étudiant et vous alerte dès qu'un élève s'éloigne de sa trajectoire habituelle.
+      </div>
+
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--red);margin-bottom:10px">🔴 Urgence — intervention recommandée</div>
+
+      <div class="alert-item crit" style="margin-bottom:10px;align-items:flex-start">
+        <div class="alert-dot r" style="margin-top:4px"></div>
+        <div style="flex:1">
+          <div class="alert-title" style="font-size:13px">Karim Diouf — inactif depuis 9 jours</div>
+          <div class="alert-sub" style="margin-top:4px">
+            Dernière session : 9 mars · Score UE3 : 38% · 0 QCM cette semaine<br>
+            Était classé 42e il y a 3 semaines, maintenant 50e sur 52. Trajectoire descendante depuis 4 semaines.
+          </div>
+          <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+            <span class="pct bad">Bas. 20% national</span>
+            <span class="badge cold">Streak : 0 jour</span>
+            <span class="badge cold">UE3 critique</span>
+          </div>
+        </div>
+        <button class="alert-btn">Contacter</button>
+      </div>
+
+      <div class="alert-item crit" style="margin-bottom:20px;align-items:flex-start">
+        <div class="alert-dot r" style="margin-top:4px"></div>
+        <div style="flex:1">
+          <div class="alert-title" style="font-size:13px">Marie Lefebvre — 3 QCM consécutifs sous 40%</div>
+          <div class="alert-sub" style="margin-top:4px">
+            Score moyen cette semaine : 37% · UE1 et UE5 très faibles · Tuteur IA non utilisé depuis 12 jours<br>
+            A refait le même QCM UE1 trois fois sans progresser — méthode de révision à revoir avec elle.
+          </div>
+          <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+            <span class="pct bad">Bas. 30% national</span>
+            <span class="badge cold">UE1 + UE5 fragiles</span>
+            <span class="badge neutral">Tuteur IA non utilisé</span>
+          </div>
+        </div>
+        <button class="alert-btn">Contacter</button>
+      </div>
+
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--amber);margin-bottom:10px">🟡 Vigilance — à surveiller</div>
+
+      <div class="alert-item warn" style="align-items:flex-start">
+        <div class="alert-dot a" style="margin-top:4px"></div>
+        <div style="flex:1">
+          <div class="alert-title" style="font-size:13px">Théo Vallet — streak rompu après 21 jours</div>
+          <div class="alert-sub" style="margin-top:4px">
+            Inactif depuis 3 jours · Score stable à 61% mais progression stagnante depuis 2 semaines<br>
+            Avait le 2e meilleur streak de la promo. Un simple rappel pourrait suffire à le relancer.
+          </div>
+          <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+            <span class="pct mid">Top 42% national</span>
+            <span class="badge neutral">En pause depuis 3j</span>
+          </div>
+        </div>
+        <button class="alert-btn">Contacter</button>
+      </div>
+    </div>
+
+    <!-- ════════════════════════
+         SUIVI PAR UE
+    ════════════════════════ -->
+    <div class="page" id="page-ues">
+      <div class="ue-tiles" id="ueTiles"></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-hdr"><div class="card-title" id="ue-detail-title">UE3 — Biophysique · Détail par leçon</div></div>
+          <div class="card-body">
+            <div class="info-box red" style="margin-bottom:14px">
+              ⚠ Point faible collectif — 23 étudiants sur 52 sont sous 50% en UE3. L'UE la plus discriminante du dernier concours blanc.
+            </div>
+            <table class="tbl">
+              <thead><tr><th>Leçon</th><th>Score moy.</th><th>Nb étudiants &lt;50%</th><th>État</th></tr></thead>
+              <tbody>
+                <tr><td style="font-size:12px;font-weight:600">Ondes et optique</td><td><div class="bar-wrap"><div class="sbar"><div class="sbar-fill" style="width:46%;background:var(--red)"></div></div><span class="sbar-val" style="color:var(--red)">46%</span></div></td><td style="font-size:12px;font-weight:700;color:var(--red)">27 élèves</td><td><span class="badge cold">Critique</span></td></tr>
+                <tr><td style="font-size:12px;font-weight:600">Thermodynamique</td><td><div class="bar-wrap"><div class="sbar"><div class="sbar-fill" style="width:53%;background:var(--amber)"></div></div><span class="sbar-val">53%</span></div></td><td style="font-size:12px;font-weight:700;color:var(--amber)">18 élèves</td><td><span class="badge hot">Fragile</span></td></tr>
+                <tr><td style="font-size:12px;font-weight:600">Mécanique des fluides</td><td><div class="bar-wrap"><div class="sbar"><div class="sbar-fill" style="width:62%;background:var(--blue)"></div></div><span class="sbar-val">62%</span></div></td><td style="font-size:12px;font-weight:700;color:var(--ink3)">9 élèves</td><td><span class="badge neutral">Moyen</span></td></tr>
+                <tr><td style="font-size:12px;font-weight:600">Électricité médicale</td><td><div class="bar-wrap"><div class="sbar"><div class="sbar-fill" style="width:66%;background:var(--blue)"></div></div><span class="sbar-val">66%</span></div></td><td style="font-size:12px;font-weight:700;color:var(--ink3)">6 élèves</td><td><span class="badge neutral">Moyen</span></td></tr>
+                <tr><td style="font-size:12px;font-weight:600">Radioactivité</td><td><div class="bar-wrap"><div class="sbar"><div class="sbar-fill" style="width:71%;background:var(--green)"></div></div><span class="sbar-val">71%</span></div></td><td style="font-size:12px;font-weight:700;color:var(--green-m)">3 élèves</td><td><span class="badge ok">Maîtrisé</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card-hdr"><div class="card-title">Distribution de la promo — UE3</div></div>
+            <div class="card-body">
+              <div style="font-size:11px;font-weight:600;color:var(--ink3)">Moyenne : 52% · <span style="color:var(--red)">23 élèves sous 50%</span></div>
+              <div class="mini-dist">
+                <div class="md-bar" style="height:14%;background:var(--border2)"></div>
+                <div class="md-bar" style="height:30%;background:var(--border2)"></div>
+                <div class="md-bar" style="height:52%;background:var(--red);opacity:.65"></div>
+                <div class="md-bar" style="height:90%;background:var(--red);opacity:.8"></div>
+                <div class="md-bar" style="height:76%;background:var(--amber);opacity:.7"></div>
+                <div class="md-bar" style="height:55%;background:var(--amber);opacity:.55"></div>
+                <div class="md-bar" style="height:38%;background:var(--blue);opacity:.55"></div>
+                <div class="md-bar" style="height:20%;background:var(--green);opacity:.65"></div>
+                <div class="md-bar" style="height:9%;background:var(--green);opacity:.55"></div>
+                <div class="md-bar" style="height:4%;background:var(--green);opacity:.45"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:4px"><span style="font-size:9px;font-weight:600;color:var(--ink3)">0%</span><span style="font-size:9px;font-weight:600;color:var(--ink3)">100%</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-hdr"><div class="card-title">Meilleurs scores UE3</div></div>
+            <div class="card-body">
+              <table class="tbl">
+                <tbody>
+                  <tr><td class="rank-num top" style="font-size:14px">1</td><td><div class="s-name" style="font-size:12px">Léa Mercier</div></td><td><span class="pct good">89%</span></td></tr>
+                  <tr><td class="rank-num top" style="font-size:14px">2</td><td><div class="s-name" style="font-size:12px">Antoine Rousseau</div></td><td><span class="pct good">83%</span></td></tr>
+                  <tr><td class="rank-num top" style="font-size:14px">3</td><td><div class="s-name" style="font-size:12px">Inès Faure</div></td><td><span class="pct mid">76%</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════
+         CONCOURS BLANCS
+    ════════════════════════ -->
+    <div class="page" id="page-concours">
+      <div class="cd-hero">
+        <div class="cd-label">Prochain concours blanc Hippocrate.AI</div>
+        <div class="cd-title">Concours blanc PASS — Samedi 28 mars 2026, 9h00</div>
+        <div class="cd-sub">120 questions · Toutes UE · 3h · Simultané avec 1 247 étudiants</div>
+        <div class="cd-chips">
+          <div class="cd-chip"><div class="cd-chip-val">10</div><div class="cd-chip-lbl">Jours</div></div>
+          <div class="cd-chip"><div class="cd-chip-val">41</div><div class="cd-chip-lbl">Inscrits</div></div>
+          <div class="cd-chip"><div class="cd-chip-val">11</div><div class="cd-chip-lbl">Non-inscrits</div></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-hdr"><div class="card-title">Résultats — CB Janvier 2026</div></div>
+          <div class="card-body">
+            <div class="stat-2" style="margin-bottom:16px">
+              <div class="stat-box">
+                <div class="stat-box-lbl">Score moyen promo</div>
+                <div class="stat-box-val">61%</div>
+                <div class="stat-box-sub" style="color:var(--green)">↑ vs 57% en octobre</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-box-lbl">Participation</div>
+                <div class="stat-box-val">45<span style="font-size:14px;font-weight:600;color:var(--ink3)"> / 52</span></div>
+                <div class="stat-box-sub" style="color:var(--ink3)">86% de la promo</div>
+              </div>
+            </div>
+            <table class="tbl">
+              <thead><tr><th>Étudiant</th><th>Score</th><th>Rang promo</th><th>Position nat.</th></tr></thead>
+              <tbody>
+                <tr><td><div class="s-name" style="font-size:12px">Léa Mercier</div></td><td><span style="font-size:13px;font-weight:800;color:var(--green)">79%</span></td><td><span class="pct good" style="font-size:10px">1re</span></td><td><span class="pct good" style="font-size:10px">Top 6%</span></td></tr>
+                <tr><td><div class="s-name" style="font-size:12px">Antoine Rousseau</div></td><td><span style="font-size:13px;font-weight:800;color:var(--green)">74%</span></td><td><span class="pct good" style="font-size:10px">2e</span></td><td><span class="pct good" style="font-size:10px">Top 11%</span></td></tr>
+                <tr><td><div class="s-name" style="font-size:12px">Sofia Benzara</div></td><td><span style="font-size:13px;font-weight:800;color:var(--blue)">70%</span></td><td><span class="pct mid" style="font-size:10px">3e</span></td><td><span class="pct mid" style="font-size:10px">Top 19%</span></td></tr>
+                <tr><td><div class="s-name" style="font-size:12px">Hugo Tran</div></td><td><span style="font-size:13px;font-weight:800;color:var(--blue)">65%</span></td><td><span class="pct mid" style="font-size:10px">4e</span></td><td><span class="pct mid" style="font-size:10px">Top 28%</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <div class="card-hdr"><div class="card-title">Progression sur 3 concours blancs</div></div>
+            <div class="card-body">
+              <div class="bk-progress-rows">
+                <div class="bk-p-row"><div class="bk-p-lbl">CB Octobre 2025</div><div class="bk-p-bar"><div class="bk-p-fill" style="width:57%;background:var(--ink3);opacity:.35"></div></div><span class="bk-p-val">57%</span></div>
+                <div class="bk-p-row"><div class="bk-p-lbl">CB Janvier 2026</div><div class="bk-p-bar"><div class="bk-p-fill" style="width:61%;background:var(--blue)"></div></div><span class="bk-p-val">61%</span></div>
+                <div class="bk-p-row"><div class="bk-p-lbl">CB Mars 2026 (prévu)</div><div class="bk-p-bar"><div class="bk-p-fill" style="width:64%;background:var(--green);opacity:.45"></div></div><span class="bk-p-val" style="color:var(--ink3)">~64%</span></div>
+              </div>
+              <div class="info-box green" style="margin-top:14px">↑ +4 pts entre les deux premiers CB — progression régulière et sur la bonne trajectoire.</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-hdr"><div class="card-title">UE les plus discriminantes (CB Jan.)</div></div>
+            <div class="card-body">
+              <div class="ue-row"><div class="ue-row-top"><span class="ue-lbl">UE3 – Biophysique</span><span class="ue-pct" style="color:var(--red)">48%</span></div><div class="ue-bar"><div class="ue-fill" style="width:48%;background:var(--red)"></div></div></div>
+              <div class="ue-row"><div class="ue-row-top"><span class="ue-lbl">UE5 – Anatomie</span><span class="ue-pct" style="color:var(--amber)">55%</span></div><div class="ue-bar"><div class="ue-fill" style="width:55%;background:var(--amber)"></div></div></div>
+              <div class="ue-row"><div class="ue-row-top"><span class="ue-lbl">UE1 – Chimie</span><span class="ue-pct">67%</span></div><div class="ue-bar"><div class="ue-fill" style="width:67%;background:var(--blue)"></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════
+         POSITIONNEMENT NATIONAL
+         (anonymisé — pas de classement entre prépas)
+    ════════════════════════ -->
+    <div class="page" id="page-benchmark">
+
+      <div class="info-box blue" style="margin-bottom:16px">
+        Votre positionnement est calculé sur les scores anonymisés de l'ensemble des étudiants Hippocrate.AI (toutes prépas confondues). Aucun établissement n'est nommé ni comparé — chaque directeur ne voit que la position de sa propre promo.
+      </div>
+
+      <!-- JAUGE GLOBALE -->
+      <div class="bk-scale">
+        <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:4px">Positionnement global de Médisup Sciences — CB Janvier 2026</div>
+        <div style="font-size:12px;font-weight:600;color:var(--ink3);margin-bottom:2px">Basé sur 1 247 étudiants Hippocrate.AI · Score moyen national : 58%</div>
+        <div class="bk-track">
+          <div class="bk-marker" style="left:72%">
+            <div class="bk-marker-lbl">Votre promo · 61%</div>
+          </div>
+        </div>
+        <div class="bk-extremes"><span>0% — Faible</span><span>Élevé — 100%</span></div>
+        <div class="divider"></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px">
+          <div class="stat-box">
+            <div class="stat-box-lbl">Votre score moyen</div>
+            <div class="stat-box-val" style="color:var(--green-m)">61%</div>
+            <div class="stat-box-sub" style="color:var(--green)">↑ +3 pts vs moy. nationale</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-lbl">Percentile national</div>
+            <div class="stat-box-val" style="color:var(--blue)">Top 28%</div>
+            <div class="stat-box-sub" style="color:var(--ink3)">Meilleur que 72% des étudiants</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-lbl">Progression depuis oct.</div>
+            <div class="stat-box-val">+4 pts</div>
+            <div class="stat-box-sub" style="color:var(--green)">Tendance positive ↑</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- UE vs nationale -->
+        <div class="card">
+          <div class="card-hdr"><div class="card-title">Votre promo vs moyenne nationale — par UE</div></div>
+          <div class="card-body">
+            <div style="font-size:10px;font-weight:600;color:var(--ink3);margin-bottom:12px">
+              <span style="display:inline-block;width:10px;height:4px;background:var(--green);border-radius:2px;margin-right:4px;vertical-align:middle"></span>Médisup Sciences &nbsp;&nbsp;
+              <span style="display:inline-block;width:10px;height:4px;background:var(--border2);border-radius:2px;margin-right:4px;vertical-align:middle"></span>Moyenne nationale (anonyme)
+            </div>
+
+            <div class="ue-row">
+              <div class="ue-row-top"><span class="ue-lbl">UE1 – Chimie</span><span style="font-size:11px;font-weight:700;color:var(--green-m)">+6 pts</span></div>
+              <div style="display:flex;flex-direction:column;gap:3px">
+                <div class="ue-bar"><div class="ue-fill" style="width:71%;background:var(--green)"></div></div>
+                <div class="ue-bar"><div class="ue-fill" style="width:65%;background:var(--border2)"></div></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:2px"><span style="font-size:10px;color:var(--green-m);font-weight:700">71%</span><span style="font-size:10px;color:var(--ink3);font-weight:600">65% nat.</span></div>
+            </div>
+            <div class="ue-row">
+              <div class="ue-row-top"><span class="ue-lbl">UE2 – Biologie cellulaire</span><span style="font-size:11px;font-weight:700;color:var(--green-m)">+6 pts</span></div>
+              <div style="display:flex;flex-direction:column;gap:3px">
+                <div class="ue-bar"><div class="ue-fill" style="width:68%;background:var(--green)"></div></div>
+                <div class="ue-bar"><div class="ue-fill" style="width:62%;background:var(--border2)"></div></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:2px"><span style="font-size:10px;color:var(--green-m);font-weight:700">68%</span><span style="font-size:10px;color:var(--ink3);font-weight:600">62% nat.</span></div>
+            </div>
+            <div class="ue-row">
+              <div class="ue-row-top"><span class="ue-lbl">UE3 – Biophysique</span><span style="font-size:11px;font-weight:700;color:var(--red)">−3 pts</span></div>
+              <div style="display:flex;flex-direction:column;gap:3px">
+                <div class="ue-bar"><div class="ue-fill" style="width:52%;background:var(--red)"></div></div>
+                <div class="ue-bar"><div class="ue-fill" style="width:55%;background:var(--border2)"></div></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:2px"><span style="font-size:10px;color:var(--red);font-weight:700">52%</span><span style="font-size:10px;color:var(--ink3);font-weight:600">55% nat.</span></div>
+            </div>
+            <div class="ue-row">
+              <div class="ue-row-top"><span class="ue-lbl">UE4 – Évaluation médicale</span><span style="font-size:11px;font-weight:700;color:var(--green-m)">+6 pts</span></div>
+              <div style="display:flex;flex-direction:column;gap:3px">
+                <div class="ue-bar"><div class="ue-fill" style="width:74%;background:var(--green)"></div></div>
+                <div class="ue-bar"><div class="ue-fill" style="width:68%;background:var(--border2)"></div></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:2px"><span style="font-size:10px;color:var(--green-m);font-weight:700">74%</span><span style="font-size:10px;color:var(--ink3);font-weight:600">68% nat.</span></div>
+            </div>
+            <div class="ue-row">
+              <div class="ue-row-top"><span class="ue-lbl">UE5 – Anatomie</span><span style="font-size:11px;font-weight:700;color:var(--amber)">+1 pt</span></div>
+              <div style="display:flex;flex-direction:column;gap:3px">
+                <div class="ue-bar"><div class="ue-fill" style="width:58%;background:var(--amber)"></div></div>
+                <div class="ue-bar"><div class="ue-fill" style="width:57%;background:var(--border2)"></div></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:2px"><span style="font-size:10px;color:var(--amber);font-weight:700">58%</span><span style="font-size:10px;color:var(--ink3);font-weight:600">57% nat.</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <div class="card-hdr"><div class="card-title">Points forts de votre promo</div></div>
+            <div class="card-body">
+              <div class="info-box green" style="margin-bottom:10px">
+                <strong>✓ UE4 Évaluation médicale : +6 pts vs national</strong><br>
+                Votre promo dépasse la moyenne nationale sur 4 UE sur 5. Un signal très positif à 68 jours du concours.
+              </div>
+              <div class="info-box red">
+                <strong>⚠ UE3 Biophysique : −3 pts vs national</strong><br>
+                Seule UE en-dessous de la moyenne. Axe de travail prioritaire avant le CB de mars — les leçons "Ondes et optique" et "Thermodynamique" concentrent l'essentiel des lacunes.
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-hdr"><div class="card-title">Évolution du positionnement</div></div>
+            <div class="card-body">
+              <div class="bk-progress-rows">
+                <div class="bk-p-row"><div class="bk-p-lbl">CB Octobre 2025</div><div class="bk-p-bar"><div class="bk-p-fill" style="width:40%;background:var(--ink3);opacity:.3"></div></div><span class="bk-p-val" style="font-size:11px;color:var(--ink3)">Top 40%</span></div>
+                <div class="bk-p-row"><div class="bk-p-lbl">CB Janvier 2026</div><div class="bk-p-bar"><div class="bk-p-fill" style="width:28%;background:var(--blue)"></div></div><span class="bk-p-val" style="font-size:11px">Top 28%</span></div>
+                <div class="bk-p-row"><div class="bk-p-lbl">Objectif CB Mars</div><div class="bk-p-bar"><div class="bk-p-fill" style="width:20%;background:var(--green);opacity:.4"></div></div><span class="bk-p-val" style="font-size:11px;color:var(--ink3)">Top 20%?</span></div>
+              </div>
+              <div class="info-box green" style="margin-top:12px">Progression de 12 points de percentile entre les deux CB — objectif Top 20% atteignable.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script>
+const PAGE_TITLES = {
+  dashboard:'Tableau de bord — Promo PASS 2025–2026',
+  etudiants:'Mes étudiants — 52 élèves · Médisup Sciences',
+  alertes:'Alertes décrochage — 3 élèves à risque',
+  ues:'Suivi par UE',
+  concours:'Concours blancs',
+  benchmark:'Positionnement national'
+};
+const NAV_IDX = {dashboard:0,etudiants:1,alertes:2,ues:3,concours:4,benchmark:5};
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.getElementById('tb-title').textContent = PAGE_TITLES[id] || '';
+  document.querySelectorAll('.sb-item').forEach((el,i) => el.classList.toggle('active', i === NAV_IDX[id]));
+}
+
+// ── UE TILES ──
+const UES = [
+  {num:'UE1',name:'Chimie organique',score:71,sub:'Stable ↔',bg:'#3B6FFF'},
+  {num:'UE2',name:'Biologie cellulaire',score:68,sub:'↑ +3 pts ce mois',bg:'#9B5DE5'},
+  {num:'UE3',name:'Biophysique',score:52,sub:'⚠ Point faible collectif',bg:'#FF4757'},
+  {num:'UE4',name:'Évaluation médicale',score:74,sub:'↑ Meilleure UE',bg:'#00C48C'},
+  {num:'UE5',name:'Anatomie',score:58,sub:'↓ En baisse',bg:'#FFB830'},
+];
+const ueNames = ['UE1 — Chimie organique','UE2 — Biologie cellulaire','UE3 — Biophysique','UE4 — Évaluation médicale','UE5 — Anatomie'];
+
+function buildUETiles(sel=2) {
+  document.getElementById('ueTiles').innerHTML = UES.map((u,i)=>`
+    <button class="ue-tile${i===sel?' sel':''}" style="background:${u.bg}" onclick="selectUE(${i})">
+      <div class="ue-tile-num">${u.num}</div>
+      <div class="ue-tile-name">${u.name}</div>
+      <div class="ue-tile-score">${u.score}%</div>
+      <div class="ue-tile-sub">${u.sub}</div>
+    </button>`).join('');
+}
+function selectUE(i) {
+  document.getElementById('ue-detail-title').textContent = ueNames[i] + ' · Détail par leçon';
+  buildUETiles(i);
+}
+buildUETiles();
+
+// ── STUDENTS ──
+const STUDENTS = [
+  {name:'Léa Mercier',score:82,streak:18,pct:'Top 8%',pcls:'good',rank:1,lycee:'Lycée Henri IV'},
+  {name:'Antoine Rousseau',score:78,streak:12,pct:'Top 14%',pcls:'good',rank:2,lycee:'Lycée Louis-le-Grand'},
+  {name:'Sofia Benzara',score:74,streak:6,pct:'Top 22%',pcls:'good',rank:3,lycee:'Lycée Carnot'},
+  {name:'Hugo Tran',score:68,streak:4,pct:'Top 31%',pcls:'mid',rank:4,lycee:'Lycée Janson-de-Sailly'},
+  {name:'Inès Faure',score:66,streak:9,pct:'Top 35%',pcls:'mid',rank:5,lycee:'Lycée Fénelon'},
+  {name:'Lucas Bernard',score:64,streak:7,pct:'Top 40%',pcls:'mid',rank:6,lycee:'Lycée Chaptal'},
+  {name:'Emma Petit',score:62,streak:3,pct:'Top 45%',pcls:'mid',rank:7,lycee:'Lycée Victor Hugo'},
+  {name:'Rayan Okafor',score:61,streak:5,pct:'Top 48%',pcls:'mid',rank:8,lycee:'Lycée Buffon'},
+  {name:'Julie Martin',score:59,streak:2,pct:'Top 53%',pcls:'low',rank:9,lycee:'Lycée J.-B. de la Salle'},
+  {name:'Théo Vallet',score:61,streak:0,pct:'Top 42%',pcls:'mid',rank:10,lycee:'Lycée Condorcet',warn:true},
+  {name:'Camille Dubois',score:58,streak:4,pct:'Top 55%',pcls:'low',rank:11,lycee:'Lycée Lamartine'},
+  {name:'Paul Lefevre',score:56,streak:6,pct:'Top 60%',pcls:'low',rank:12,lycee:'Lycée Arago'},
+  {name:'Amina Sy',score:55,streak:8,pct:'Top 62%',pcls:'low',rank:13,lycee:'Lycée Sophie Germain'},
+  {name:'Clément Vidal',score:53,streak:1,pct:'Top 65%',pcls:'low',rank:14,lycee:'Lycée Molière'},
+  {name:'Alice Nguyen',score:52,streak:3,pct:'Top 67%',pcls:'low',rank:15,lycee:'Lycée La Fontaine'},
+  {name:'Marie Lefebvre',score:42,streak:2,pct:'Bas. 30%',pcls:'bad',rank:51,lycee:'Lycée Racine',alert:true},
+  {name:'Karim Diouf',score:41,streak:0,pct:'Bas. 20%',pcls:'bad',rank:52,lycee:'Lycée Voltaire',alert:true},
+];
+
+function buildStudents() {
+  const avBg = ['#0F1021','#3B6FFF','#00C48C','#9B5DE5','#0096C7','#FB8500','#00A677','#1c2a4a'];
+  document.getElementById('studentGrid').innerHTML = STUDENTS.map((s,i)=>{
+    const initials = s.name.split(' ').map(n=>n[0]).join('');
+    const bg = s.alert ? '#FF4757' : avBg[i % avBg.length];
+    const barColor = s.score>=70?'var(--green)':s.score>=55?'var(--blue)':s.score>=45?'var(--amber)':'var(--red)';
+    const streakBadge = s.streak>10?`<span class="badge hot">🔥 ${s.streak}j</span>`
+      : s.streak>0?`<span class="badge ok">✓ ${s.streak}j</span>`
+      : `<span class="badge cold">✗ 0j</span>`;
+    return `<button class="s-card${s.alert?' at-risk':''}">
+      <div class="s-card-top">
+        <div class="s-av" style="background:${bg}">${initials}</div>
+        <div><div class="s-card-name">${s.name}</div><div class="s-card-rank">${s.alert?'⚠ À risque':`Rang ${s.rank} / 52`}</div></div>
+      </div>
+      <div class="s-card-score">${s.score}<span>%</span></div>
+      <div class="s-mini-bar"><div style="height:100%;width:${s.score}%;background:${barColor};border-radius:2px"></div></div>
+      <div class="s-card-bottom">${streakBadge}<span class="pct ${s.pcls}">${s.pct}</span></div>
+    </button>`;
+  }).join('');
+}
+buildStudents();
+</script>
+</body>
+</html>
